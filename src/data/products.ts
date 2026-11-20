@@ -1,8 +1,19 @@
-import { CurrencyCode, Product, Size } from '../types';
+import { CurrencyCode, Product, Size, StoreSettings } from '../types';
 
 export const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL'];
 
 export const FREE_DELIVERY_THRESHOLD_USD = 100;
+
+export const DEFAULT_STORE_SETTINGS: StoreSettings = {
+  storeName: 'Jhonty Hub',
+  announcementText: 'FREE DELIVERY OVER $100. ALWAYS FOR MEMBERS',
+  announcementEnabled: true,
+  freeDeliveryThresholdUsd: 100,
+  standardShippingUsd: 12,
+  cadExchangeRate: 1.36,
+  lowStockDefaultThreshold: 6,
+  supportEmail: 'concierge@jhontyhub.studio',
+};
 
 export const CURRENCIES: Record<
   CurrencyCode,
@@ -22,22 +33,105 @@ export const CURRENCIES: Record<
   },
 };
 
-export function formatPrice(amountUsd: number, currency: CurrencyCode): string {
+export function formatPrice(
+  amountUsd: number,
+  currency: CurrencyCode,
+  cadRateOverride?: number,
+): string {
   const cfg = CURRENCIES[currency];
-  const converted = amountUsd * cfg.rate;
+  const rate =
+    currency === 'CAD' && typeof cadRateOverride === 'number'
+      ? cadRateOverride
+      : cfg.rate;
+  const converted = amountUsd * rate;
   return `${cfg.symbol}${converted.toFixed(2)}`;
 }
+
+export function getTotalStock(product: Product): number {
+  return SIZES.reduce((sum, sz) => sum + (product.stock?.[sz] ?? 0), 0);
+}
+
+export function getLowStockSizes(product: Product): Size[] {
+  const threshold = product.lowStockThreshold ?? 6;
+  return SIZES.filter((sz) => (product.stock?.[sz] ?? 0) <= threshold);
+}
+
+export const PRESET_GALLERY_ASSETS = [
+  {
+    label: 'Ringer Tee Studio Set',
+    productImage: '/src/assets/images/garment_ringer_tee_1795163913006.jpg',
+    showroomViews: {
+      front: '/src/assets/images/jh_ringer_front_1795173047482.jpg',
+      right: '/src/assets/images/jh_ringer_right_1795173047252.jpg',
+      back: '/src/assets/images/jh_ringer_back_1795173047187.jpg',
+      left: '/src/assets/images/jh_ringer_left_1795173047478.jpg',
+    },
+  },
+  {
+    label: 'Linen Shirt Studio Set',
+    productImage: '/src/assets/images/garment_linen_shirt_1795163913327.jpg',
+    showroomViews: {
+      front: '/src/assets/images/jh_linen_front_1795173047315.jpg',
+      right: '/src/assets/images/jh_linen_right_1795173048066.jpg',
+      back: '/src/assets/images/jh_linen_back_1795173048092.jpg',
+      left: '/src/assets/images/jh_linen_left_1795173048223.jpg',
+    },
+  },
+  {
+    label: 'Loop Hoodie Studio Set',
+    productImage: '/src/assets/images/garment_loop_hoodie_1795163913762.jpg',
+    showroomViews: {
+      front: '/src/assets/images/jh_hoodie_front_1795173047250.jpg',
+      right: '/src/assets/images/jh_hoodie_right_1795173048191.jpg',
+      back: '/src/assets/images/jh_hoodie_back_1795173047811.jpg',
+      left: '/src/assets/images/jh_hoodie_left_1795173048658.jpg',
+    },
+  },
+  {
+    label: 'Breton Long Sleeve Studio Set',
+    productImage: '/src/assets/images/garment_breton_stripe_1795163913613.jpg',
+    showroomViews: {
+      front: '/src/assets/images/jh_breton_front_1795173166048.jpg',
+      right: '/src/assets/images/jh_breton_right_1795173200001.jpg',
+      back: '/src/assets/images/jh_breton_back_1795173168034.jpg',
+      left: '/src/assets/images/jh_breton_left_1795173200002.jpg',
+    },
+  },
+  {
+    label: 'Canvas Chore Jacket Studio Set',
+    productImage: '/src/assets/images/garment_chore_jacket_1795163914249.jpg',
+    showroomViews: {
+      front: '/src/assets/images/jh_chore_front_1795173166215.jpg',
+      right: '/src/assets/images/jh_chore_right_1795173200005.jpg',
+      back: '/src/assets/images/jh_chore_back_1795173200006.jpg',
+      left: '/src/assets/images/jh_chore_left_1795173200007.jpg',
+    },
+  },
+  {
+    label: 'Nylon Bomber Studio Set',
+    productImage: '/src/assets/images/garment_nylon_bomber_1795163913724.jpg',
+    showroomViews: {
+      front: '/src/assets/images/jh_bomber_front_1795173165416.jpg',
+      right: '/src/assets/images/jh_bomber_right_1795173200003.jpg',
+      back: '/src/assets/images/jh_bomber_back_1795173200004.jpg',
+      left: '/src/assets/images/jh_bomber_left_1795173168438.jpg',
+    },
+  },
+];
 
 export const PRODUCTS: Product[] = [
   {
     id: 'ringer-tee',
+    sku: 'JH-TOP-001',
     name: 'Ringer Tee',
     priceUsd: 38.0,
+    costUsd: 14.5,
     category: 'Tops',
     color: 'Chalk / Deep Navy',
     tagline: 'Heavyweight combed organic jersey with contrast rib binding.',
     description:
       'Cut in a clean boxy block from 260 GSM Portuguese combed cotton jersey. Finished with dense navy ribbed neckline and cuff trims that retain structure wash after wash.',
+    status: 'active',
     showroomImage: '/src/assets/images/jh_ringer_front_1795173047482.jpg',
     showroomViews: {
       front: '/src/assets/images/jh_ringer_front_1795173047482.jpg',
@@ -47,6 +141,9 @@ export const PRODUCTS: Product[] = [
     },
     productImage: '/src/assets/images/garment_ringer_tee_1795163913006.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    stock: { XS: 14, S: 22, M: 31, L: 18, XL: 9 },
+    lowStockThreshold: 6,
+    isNewArrival: false,
     isBestseller: true,
     pairWithIds: ['canvas-chore-jacket', 'nylon-bomber', 'loop-hoodie'],
     outfitPairings: [
@@ -84,13 +181,16 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'linen-shirt',
+    sku: 'JH-TOP-002',
     name: 'Linen Shirt',
     priceUsd: 78.0,
+    costUsd: 29.0,
     category: 'Tops',
     color: 'Sky Chambray',
     tagline: 'Airy Belgian flax linen washed for immediate softness.',
     description:
       'Tailored from long-staple European flax with natural thermoregulating weave. Features mother-of-pearl buttons, single chest pocket, and a gently curved hem designed to wear untucked.',
+    status: 'active',
     showroomImage: '/src/assets/images/jh_linen_front_1795173047315.jpg',
     showroomViews: {
       front: '/src/assets/images/jh_linen_front_1795173047315.jpg',
@@ -100,7 +200,10 @@ export const PRODUCTS: Product[] = [
     },
     productImage: '/src/assets/images/garment_linen_shirt_1795163913327.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    stock: { XS: 8, S: 15, M: 19, L: 4, XL: 7 },
+    lowStockThreshold: 6,
     isNewArrival: true,
+    isBestseller: false,
     pairWithIds: ['nylon-bomber', 'canvas-chore-jacket', 'ringer-tee'],
     outfitPairings: [
       {
@@ -137,13 +240,16 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'loop-hoodie',
+    sku: 'JH-TOP-003',
     name: 'Loop Hoodie',
     priceUsd: 88.0,
+    costUsd: 33.0,
     category: 'Tops',
     color: 'Heather Ash',
     tagline: 'Structured 460 GSM diagonal loopback French terry.',
     description:
       'Engineered with a double-layered self-standing hood, brushed metal aglets, and side rib gussets for clean architectural drape without bulk.',
+    status: 'active',
     showroomImage: '/src/assets/images/jh_hoodie_front_1795173047250.jpg',
     showroomViews: {
       front: '/src/assets/images/jh_hoodie_front_1795173047250.jpg',
@@ -153,6 +259,9 @@ export const PRODUCTS: Product[] = [
     },
     productImage: '/src/assets/images/garment_loop_hoodie_1795163913762.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    stock: { XS: 5, S: 16, M: 24, L: 14, XL: 11 },
+    lowStockThreshold: 6,
+    isNewArrival: false,
     isBestseller: true,
     pairWithIds: ['nylon-bomber', 'canvas-chore-jacket', 'ringer-tee'],
     outfitPairings: [
@@ -190,13 +299,16 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'breton-long-sleeve',
+    sku: 'JH-TOP-004',
     name: 'Breton Long Sleeve',
     priceUsd: 68.0,
+    costUsd: 25.0,
     category: 'Tops',
     color: 'Ecru / Maritime Navy',
     tagline: 'Yarn-dyed horizontal stripe knit in dense interlock cotton.',
     description:
       'Inspired by archival coastal workwear and refined for modern layering. Yarn-dyed stripes ensure crisp definition and zero fade over years of wear.',
+    status: 'active',
     showroomImage: '/src/assets/images/jh_breton_front_1795173166048.jpg',
     showroomViews: {
       front: '/src/assets/images/jh_breton_front_1795173166048.jpg',
@@ -206,6 +318,8 @@ export const PRODUCTS: Product[] = [
     },
     productImage: '/src/assets/images/garment_breton_stripe_1795163913613.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    stock: { XS: 10, S: 18, M: 20, L: 13, XL: 3 },
+    lowStockThreshold: 6,
     isNewArrival: true,
     isBestseller: true,
     pairWithIds: ['canvas-chore-jacket', 'nylon-bomber', 'linen-shirt'],
@@ -244,13 +358,16 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'canvas-chore-jacket',
+    sku: 'JH-OUT-005',
     name: 'Canvas Chore Jacket',
     priceUsd: 148.0,
+    costUsd: 54.0,
     category: 'Outerwear',
     color: 'Field Olive',
     tagline: 'Garment-dyed 12oz duck canvas utility jacket with corozo buttons.',
     description:
       'Our signature transitional layer. Built from tightly woven organic cotton duck canvas that breaks in gracefully to the wearer. Detailed with four reinforced patch pockets and an interior chest pocket.',
+    status: 'active',
     showroomImage: '/src/assets/images/jh_chore_front_1795173166215.jpg',
     showroomViews: {
       front: '/src/assets/images/jh_chore_front_1795173166215.jpg',
@@ -260,6 +377,8 @@ export const PRODUCTS: Product[] = [
     },
     productImage: '/src/assets/images/garment_chore_jacket_1795163914249.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    stock: { XS: 6, S: 11, M: 14, L: 9, XL: 2 },
+    lowStockThreshold: 6,
     isNewArrival: true,
     isBestseller: true,
     pairWithIds: ['breton-long-sleeve', 'ringer-tee', 'loop-hoodie'],
@@ -298,13 +417,16 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'nylon-bomber',
+    sku: 'JH-OUT-006',
     name: 'Nylon Bomber',
     priceUsd: 168.0,
+    costUsd: 62.0,
     category: 'Outerwear',
     color: 'Midnight Navy',
     tagline: 'Water-repellent Italian matte technical nylon with minimal hardware.',
     description:
       'Precision-cut flight silhouette crafted from tightly woven matte Italian nylon with light recycled insulation. Equipped with a brushed gunmetal two-way zipper, snap welt pockets, and fine-gauge rib knit trims.',
+    status: 'active',
     showroomImage: '/src/assets/images/jh_bomber_front_1795173165416.jpg',
     showroomViews: {
       front: '/src/assets/images/jh_bomber_front_1795173165416.jpg',
@@ -314,6 +436,8 @@ export const PRODUCTS: Product[] = [
     },
     productImage: '/src/assets/images/garment_nylon_bomber_1795163913724.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    stock: { XS: 4, S: 9, M: 12, L: 7, XL: 0 },
+    lowStockThreshold: 6,
     isNewArrival: true,
     isBestseller: true,
     pairWithIds: ['breton-long-sleeve', 'ringer-tee', 'linen-shirt'],

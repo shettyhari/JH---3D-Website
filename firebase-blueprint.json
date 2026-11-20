@@ -1,0 +1,469 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Catalog garment with showroom turnaround photography, specs, measurements, and per-size inventory.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "sku": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "priceUsd": {
+          "type": "number"
+        },
+        "costUsd": {
+          "type": "number"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Tops", "Outerwear"]
+        },
+        "color": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "tagline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1200
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "draft", "archived"]
+        },
+        "showroomImage": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "showroomViews": {
+          "type": "object",
+          "description": "Front, right, back, and left showroom image paths."
+        },
+        "productImage": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "sizes": {
+          "type": "array",
+          "description": "Available sizes (XS, S, M, L, XL)."
+        },
+        "stock": {
+          "type": "object",
+          "description": "Per-size stock integers keyed by XS, S, M, L, XL."
+        },
+        "lowStockThreshold": {
+          "type": "number"
+        },
+        "isNewArrival": {
+          "type": "boolean"
+        },
+        "isBestseller": {
+          "type": "boolean"
+        },
+        "pairWithIds": {
+          "type": "array",
+          "description": "Up to 6 complementary product IDs."
+        },
+        "outfitPairings": {
+          "type": "array",
+          "description": "Up to 6 structured outfit pairing cards."
+        },
+        "specs": {
+          "type": "object",
+          "description": "Fabric, weight, origin, fit, modelNote, and care."
+        },
+        "measurements": {
+          "type": "object",
+          "description": "Per-size measurement map (chest, length, shoulder, sleeve)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "sku",
+        "name",
+        "priceUsd",
+        "costUsd",
+        "category",
+        "color",
+        "tagline",
+        "description",
+        "status",
+        "showroomImage",
+        "showroomViews",
+        "productImage",
+        "sizes",
+        "stock",
+        "lowStockThreshold",
+        "isNewArrival",
+        "isBestseller",
+        "pairWithIds",
+        "outfitPairings",
+        "specs",
+        "measurements",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Registered storefront customer or staff profile with RBAC role and account state.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "photoURL": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "manager", "customer"]
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["Studio Member", "VIP Member", "Staff"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "suspended"]
+        },
+        "ordersCount": {
+          "type": "number"
+        },
+        "totalSpentUsd": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "name",
+        "email",
+        "photoURL",
+        "role",
+        "tier",
+        "status",
+        "ordersCount",
+        "totalSpentUsd",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Trusted admin role assignment document for Firestore RBAC verification.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "grantedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email", "grantedBy", "createdAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order record with line items, shipping destination, and fulfillment status.",
+      "type": "object",
+      "properties": {
+        "orderNumber": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 32,
+          "pattern": "^[A-Z0-9\\-]+$"
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "shippingName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "shippingAddress": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "items": {
+          "type": "array",
+          "description": "1 to 25 ordered garment line items."
+        },
+        "subtotalUsd": {
+          "type": "number"
+        },
+        "shippingUsd": {
+          "type": "number"
+        },
+        "totalUsd": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["USD", "CAD"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "processing", "shipped", "delivered", "cancelled", "refunded"]
+        },
+        "trackingNumber": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "orderNumber",
+        "userId",
+        "email",
+        "shippingName",
+        "shippingAddress",
+        "items",
+        "subtotalUsd",
+        "shippingUsd",
+        "totalUsd",
+        "currency",
+        "status",
+        "trackingNumber",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "InventoryLog": {
+      "title": "InventoryLog",
+      "description": "Immutable stock movement audit entry linked to a product and size.",
+      "type": "object",
+      "properties": {
+        "productId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "productName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "size": {
+          "type": "string",
+          "enum": ["XS", "S", "M", "L", "XL"]
+        },
+        "previousQty": {
+          "type": "number"
+        },
+        "delta": {
+          "type": "number"
+        },
+        "newQty": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string",
+          "enum": ["restock", "sale", "adjustment", "return", "damaged"]
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "actorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "actorName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "productId",
+        "productName",
+        "size",
+        "previousQty",
+        "delta",
+        "newQty",
+        "reason",
+        "note",
+        "actorUid",
+        "actorName",
+        "createdAt"
+      ]
+    },
+    "StoreSettings": {
+      "title": "StoreSettings",
+      "description": "Global storefront configuration managed from the admin panel.",
+      "type": "object",
+      "properties": {
+        "storeName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "announcementText": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "announcementEnabled": {
+          "type": "boolean"
+        },
+        "freeDeliveryThresholdUsd": {
+          "type": "number"
+        },
+        "standardShippingUsd": {
+          "type": "number"
+        },
+        "cadExchangeRate": {
+          "type": "number"
+        },
+        "lowStockDefaultThreshold": {
+          "type": "number"
+        },
+        "supportEmail": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "storeName",
+        "announcementText",
+        "announcementEnabled",
+        "freeDeliveryThresholdUsd",
+        "standardShippingUsd",
+        "cadExchangeRate",
+        "lowStockDefaultThreshold",
+        "supportEmail",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Publicly readable product catalog and per-size inventory; admin-only writes."
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "PII-protected user accounts and RBAC roles; owner or admin read, strict role escalation protection."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Trusted admin role registry; admin-only writes."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Customer orders; owner or admin read, verified user create, admin fulfillment updates with terminal state locking."
+    },
+    "/inventoryLogs/{logId}": {
+      "schema": { "$ref": "#/entities/InventoryLog" },
+      "description": "Immutable admin-only stock adjustment ledger verified against existing product records."
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/StoreSettings" },
+      "description": "Global storefront configuration document at /settings/store; publicly readable, admin-only writes."
+    }
+  }
+}

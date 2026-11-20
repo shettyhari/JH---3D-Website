@@ -6,7 +6,7 @@ import { QuickViewModal } from './QuickViewModal';
 import { ResilientImage } from './ResilientImage';
 
 interface CatalogOverlayProps {
-  section: Exclude<NavSection, 'showroom'>;
+  section: Exclude<NavSection, 'showroom' | 'admin'>;
   products: Product[];
   currency: CurrencyCode;
   wishlistIds: string[];
@@ -17,7 +17,7 @@ interface CatalogOverlayProps {
 }
 
 const SECTION_META: Record<
-  Exclude<NavSection, 'showroom'>,
+  Exclude<NavSection, 'showroom' | 'admin'>,
   { title: string; subtitle: string }
 > = {
   'shop-all': {

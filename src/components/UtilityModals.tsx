@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowRight, Heart, Search, Trash2, X } from 'lucide-react';
+import {
+  ArrowRight,
+  Heart,
+  Search,
+  ShieldCheck,
+  Trash2,
+  X,
+} from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { formatPrice } from '../data/products';
 import { CurrencyCode, MemberProfile, Product, Size } from '../types';
 import { BrandLogo } from './BrandLogo';
@@ -13,13 +21,14 @@ interface UtilityModalsProps {
   onClose: () => void;
   products: Product[];
   currency: CurrencyCode;
+  cadRate?: number;
+  freeDeliveryThresholdUsd?: number;
   wishlistIds: string[];
   member: MemberProfile | null;
   onToggleWishlist: (productId: string) => void;
   onTryInShowroom: (productId: string) => void;
   onAddToBag: (productId: string, size: Size) => void;
-  onSignIn: (profile: MemberProfile) => void;
-  onSignOut: () => void;
+  onOpenAdmin: () => void;
 }
 
 export function UtilityModals({
@@ -27,17 +36,18 @@ export function UtilityModals({
   onClose,
   products,
   currency,
+  cadRate,
+  freeDeliveryThresholdUsd = 100,
   wishlistIds,
   member,
   onToggleWishlist,
   onTryInShowroom,
   onAddToBag,
-  onSignIn,
-  onSignOut,
+  onOpenAdmin,
 }: UtilityModalsProps) {
   const [query, setQuery] = useState('');
-  const [authName, setAuthName] = useState('');
-  const [authEmail, setAuthEmail] = useState('');
+  const { isAdmin, authLoading, authError, signInWithGoogle, signOut } =
+    useAuth();
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -55,17 +65,6 @@ export function UtilityModals({
     () => products.filter((p) => wishlistIds.includes(p.id)),
     [products, wishlistIds],
   );
-
-  const handleAuthSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!authEmail.trim()) return;
-    onSignIn({
-      name: authName.trim() || authEmail.split('@')[0],
-      email: authEmail.trim(),
-      tier: 'Studio Member',
-    });
-    onClose();
-  };
 
   return (
     <AnimatePresence>
@@ -151,7 +150,7 @@ export function UtilityModals({
                         </button>
                         <div className="flex items-center gap-3 shrink-0">
                           <span className="text-xs font-medium tabular-nums text-[#171615] dark:text-[#F4F1EC]">
-                            {formatPrice(p.priceUsd, currency)}
+                            {formatPrice(p.priceUsd, currency, cadRate)}
                           </span>
                           <button
                             type="button"
@@ -221,7 +220,7 @@ export function UtilityModals({
                                 {p.name}
                               </p>
                               <p className="text-xs text-[#6D665E] dark:text-[#9E978F] tabular-nums mt-0.5">
-                                {formatPrice(p.priceUsd, currency)} · {p.color}
+                                {formatPrice(p.priceUsd, currency, cadRate)} · {p.color}
                               </p>
                             </div>
                           </div>
@@ -310,7 +309,7 @@ export function UtilityModals({
                     <div>
                       <p className="text-[#78716A] dark:text-[#9E978F]">Delivery</p>
                       <p className="font-medium text-[#171615] dark:text-[#F4F1EC] mt-0.5">
-                        Complimentary over $100
+                        Complimentary over ${freeDeliveryThresholdUsd}
                       </p>
                     </div>
                   </div>
@@ -341,77 +340,96 @@ export function UtilityModals({
                 {member ? (
                   <div className="p-6 space-y-5">
                     <div className="p-4 rounded-xl bg-[#FAF9F7] dark:bg-[#1C1A18] border border-black/[0.07] dark:border-white/[0.08]">
-                      <p className="text-xs text-[#6D665E] dark:text-[#9E978F]">
-                        {member.tier}
-                      </p>
-                      <p className="text-lg font-medium text-[#171615] dark:text-[#F4F1EC] mt-0.5">
-                        {member.name}
-                      </p>
-                      <p className="text-xs text-[#59534C] dark:text-[#B5AEA6] mt-0.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {member.photoURL ? (
+                            <img
+                              src={member.photoURL}
+                              alt={member.name}
+                              referrerPolicy="no-referrer"
+                              className="w-10 h-10 rounded-full object-cover border border-black/[0.08] dark:border-white/[0.1] shrink-0"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615] text-sm font-semibold flex items-center justify-center shrink-0">
+                              {member.name.slice(0, 1).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-xs text-[#6D665E] dark:text-[#9E978F]">
+                              {member.tier}
+                            </p>
+                            <p className="text-base font-medium text-[#171615] dark:text-[#F4F1EC] truncate">
+                              {member.name}
+                            </p>
+                          </div>
+                        </div>
+                        {isAdmin && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615] text-[10px] font-medium uppercase tracking-wider shrink-0">
+                            <ShieldCheck className="w-3 h-3" />
+                            Admin
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-[#59534C] dark:text-[#B5AEA6] mt-2">
                         {member.email}
                       </p>
                       <p className="text-xs text-[#171615] dark:text-[#F4F1EC] font-medium mt-3 pt-3 border-t border-black/[0.07] dark:border-white/[0.08]">
                         Complimentary express delivery active on all orders.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSignOut();
-                        onClose();
-                      }}
-                      className="w-full py-2.5 rounded-lg border border-black/[0.15] dark:border-white/[0.18] text-xs font-medium tracking-wider uppercase text-[#171615] dark:text-[#F4F1EC] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
-                    >
-                      Sign Out
-                    </button>
+
+                    <div className="space-y-2.5">
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onOpenAdmin();
+                            onClose();
+                          }}
+                          className="w-full py-2.5 rounded-lg bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615] text-xs font-medium tracking-[0.14em] uppercase hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                          Open Admin Console
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        disabled={authLoading}
+                        onClick={async () => {
+                          await signOut();
+                          onClose();
+                        }}
+                        className="w-full py-2.5 rounded-lg border border-black/[0.15] dark:border-white/[0.18] text-xs font-medium tracking-wider uppercase text-[#171615] dark:text-[#F4F1EC] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] disabled:opacity-50 cursor-pointer"
+                      >
+                        {authLoading ? 'Signing Out...' : 'Sign Out'}
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleAuthSubmit} className="p-6 space-y-4">
+                  <div className="p-6 space-y-4">
                     <p className="text-xs text-[#59534C] dark:text-[#B5AEA6] leading-relaxed">
-                      Members receive complimentary express delivery on every order
-                      with no minimum threshold, plus early access to seasonal releases.
+                      Sign in with your Google account to unlock complimentary
+                      express delivery on every order, sync orders to your
+                      account, and access staff operations if authorized.
                     </p>
-                    <div>
-                      <label
-                        htmlFor="member-name"
-                        className="block text-xs font-medium text-[#3F3B36] dark:text-[#D4CEC7] mb-1.5"
-                      >
-                        Full name
-                      </label>
-                      <input
-                        id="member-name"
-                        type="text"
-                        required
-                        value={authName}
-                        onChange={(e) => setAuthName(e.target.value)}
-                        placeholder="Henrik Sorensen"
-                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-black/[0.15] dark:border-white/[0.16] bg-white dark:bg-[#1C1A18] text-[#171615] dark:text-[#F4F1EC] placeholder:text-[#8E877F] dark:placeholder:text-[#78716A] focus:outline-none focus:border-[#171615] dark:focus:border-[#F4F1EC]"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="member-email"
-                        className="block text-xs font-medium text-[#3F3B36] dark:text-[#D4CEC7] mb-1.5"
-                      >
-                        Email address
-                      </label>
-                      <input
-                        id="member-email"
-                        type="email"
-                        required
-                        value={authEmail}
-                        onChange={(e) => setAuthEmail(e.target.value)}
-                        placeholder="henrik@jhontyhub.studio"
-                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-black/[0.15] dark:border-white/[0.16] bg-white dark:bg-[#1C1A18] text-[#171615] dark:text-[#F4F1EC] placeholder:text-[#8E877F] dark:placeholder:text-[#78716A] focus:outline-none focus:border-[#171615] dark:focus:border-[#F4F1EC]"
-                      />
-                    </div>
+                    {authError && (
+                      <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-700 dark:text-red-300">
+                        {authError}
+                      </div>
+                    )}
                     <button
-                      type="submit"
-                      className="w-full py-3 bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] text-white dark:text-[#171615] text-xs font-medium tracking-[0.14em] uppercase rounded-lg transition-colors cursor-pointer"
+                      type="button"
+                      disabled={authLoading}
+                      onClick={async () => {
+                        await signInWithGoogle();
+                      }}
+                      className="w-full py-3 bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] text-white dark:text-[#171615] text-xs font-medium tracking-[0.14em] uppercase rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                     >
-                      Continue as Member
+                      {authLoading
+                        ? 'Connecting to Google...'
+                        : 'Continue with Google'}
                     </button>
-                  </form>
+                  </div>
                 )}
               </>
             )}

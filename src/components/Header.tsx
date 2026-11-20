@@ -4,6 +4,7 @@ import {
   Menu,
   Moon,
   Search,
+  ShieldCheck,
   ShoppingBag,
   Sun,
   User,
@@ -23,6 +24,8 @@ interface HeaderProps {
   bagCount: number;
   wishlistCount: number;
   member: MemberProfile | null;
+  announcementText?: string;
+  announcementEnabled?: boolean;
   onOpenBag: () => void;
   onOpenSearch: () => void;
   onOpenWishlist: () => void;
@@ -47,6 +50,8 @@ export function Header({
   bagCount,
   wishlistCount,
   member,
+  announcementText,
+  announcementEnabled = true,
   onOpenBag,
   onOpenSearch,
   onOpenWishlist,
@@ -59,12 +64,12 @@ export function Header({
   return (
     <header className="sticky top-0 z-40 w-full bg-white dark:bg-[#080808] border-b border-black/[0.08] dark:border-white/[0.1] transition-colors duration-200">
       {/* Slim announcement strip */}
-      {bannerVisible && (
+      {bannerVisible && announcementEnabled && (
         <div className="relative flex items-center justify-center bg-[#141312] dark:bg-[#191816] text-white/90 h-7 px-8 text-[10px] tracking-[0.18em] font-medium uppercase border-b border-transparent dark:border-white/[0.06]">
           <span className="truncate">
             {member
               ? `COMPLIMENTARY EXPRESS DELIVERY ACTIVE FOR ${member.name.toUpperCase()}`
-              : 'FREE DELIVERY OVER $100. ALWAYS FOR MEMBERS'}
+              : announcementText || 'FREE DELIVERY OVER $100. ALWAYS FOR MEMBERS'}
           </span>
           <button
             type="button"
@@ -146,6 +151,21 @@ export function Header({
             className="hidden md:inline-block hover:text-[#171615] dark:hover:text-[#F4F1EC] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             ABOUT
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              onSelectSection(activeSection === 'admin' ? 'showroom' : 'admin')
+            }
+            className={`hidden md:inline-flex items-center gap-1 py-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+              activeSection === 'admin'
+                ? 'text-[#171615] dark:text-[#F4F1EC] underline underline-offset-4 decoration-[1.5px]'
+                : 'hover:text-[#171615] dark:hover:text-[#F4F1EC]'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5 stroke-[1.75]" />
+            <span>ADMIN</span>
           </button>
 
           <button
@@ -260,6 +280,21 @@ export function Header({
                 {item.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => {
+                onSelectSection('admin');
+                setMobileMenuOpen(false);
+              }}
+              className={`text-left py-2 text-xs tracking-[0.14em] font-medium inline-flex items-center gap-1.5 cursor-pointer ${
+                activeSection === 'admin'
+                  ? 'text-[#171615] dark:text-[#F4F1EC]'
+                  : 'text-[#5D5852] dark:text-[#9E978F]'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>ADMIN CONSOLE</span>
+            </button>
           </div>
           <div className="pt-3 border-t border-black/[0.08] dark:border-white/[0.1] flex flex-wrap items-center gap-4 text-xs tracking-[0.12em] text-[#45413C] dark:text-[#B5AEA6]">
             <button

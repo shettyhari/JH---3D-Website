@@ -19,11 +19,23 @@ import {
   CartItem,
   CurrencyCode,
   MemberProfile,
+  OrderLineItem,
   OrderReceipt,
   Product,
   Size,
 } from '../types';
 import { ResilientImage } from './ResilientImage';
+
+export interface CheckoutPersistPayload {
+  orderNumber: string;
+  email: string;
+  shippingName: string;
+  shippingAddress: string;
+  items: OrderLineItem[];
+  subtotalUsd: number;
+  shippingUsd: number;
+  currency: CurrencyCode;
+}
 
 interface BagDrawerProps {
   isOpen: boolean;
@@ -32,6 +44,10 @@ interface BagDrawerProps {
   products: Product[];
   currency: CurrencyCode;
   member: MemberProfile | null;
+  freeDeliveryThresholdUsd?: number;
+  standardShippingUsd?: number;
+  cadRate?: number;
+  onPersistOrder?: (payload: CheckoutPersistPayload) => Promise<void>;
   onUpdateQuantity: (productId: string, size: Size, delta: number) => void;
   onRemoveItem: (productId: string, size: Size) => void;
   onAddItem: (productId: string, size: Size) => void;
@@ -48,6 +64,10 @@ export function BagDrawer({
   products,
   currency,
   member,
+  freeDeliveryThresholdUsd = FREE_DELIVERY_THRESHOLD_USD,
+  standardShippingUsd = 12,
+  cadRate,
+  onPersistOrder,
   onUpdateQuantity,
   onRemoveItem,
   onAddItem,
@@ -63,6 +83,7 @@ export function BagDrawer({
   const [fullName, setFullName] = useState(member?.name ?? '');
   const [address, setAddress] = useState('');
   const [cityPostal, setCityPostal] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [receipt, setReceipt] = useState<OrderReceipt | null>(null);
 
   const productMap = useMemo(() => {
@@ -89,17 +110,24 @@ export function BagDrawer({
   }, [enrichedItems]);
 
   const qualifiesFreeDelivery =
-    Boolean(member) || subtotalUsd >= FREE_DELIVERY_THRESHOLD_USD;
+    Boolean(member) ||
+    freeDeliveryThresholdUsd <= 0 ||
+    subtotalUsd >= freeDeliveryThresholdUsd;
   const remainingForFreeUsd = Math.max(
     0,
-    FREE_DELIVERY_THRESHOLD_USD - subtotalUsd,
+    freeDeliveryThresholdUsd - subtotalUsd,
   );
   const progressPct = qualifiesFreeDelivery
     ? 100
-    : Math.min(100, (subtotalUsd / FREE_DELIVERY_THRESHOLD_USD) * 100);
+    : Math.min(
+        100,
+        (subtotalUsd / Math.max(1, freeDeliveryThresholdUsd)) * 100,
+      );
 
   const shippingUsd =
-    enrichedItems.length === 0 || qualifiesFreeDelivery ? 0 : 12;
+    enrichedItems.length === 0 || qualifiesFreeDelivery
+      ? 0
+      : standardShippingUsd;
 
   // Smart cross-sell recommendations ("Pair it with") excluding items already in bag
   const pairingCandidates = useMemo(() => {
@@ -137,11 +165,23 @@ export function BagDrawer({
     }, 300);
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !fullName.trim() || !address.trim()) return;
+    if (!email.trim() || !fullName.trim() || !address.trim() || submitting) return;
 
+    setSubmitting(true);
     const orderNum = `JH-${Math.floor(1000 + Math.random() * 9000)}`;
+    const fullAddress = `${address.trim()}${
+      cityPostal.trim() ? `, ${cityPostal.trim()}` : ''
+    }`;
+    const lineItems: OrderLineItem[] = enrichedItems.map((i) => ({
+      productId: i.product.id,
+      name: i.product.name,
+      size: i.size,
+      quantity: i.quantity,
+      unitPriceUsd: i.product.priceUsd,
+    }));
+
     const newReceipt: OrderReceipt = {
       orderNumber: orderNum,
       placedAt: new Date().toLocaleDateString('en-US', {
@@ -151,19 +191,36 @@ export function BagDrawer({
       }),
       email: email.trim(),
       shippingName: fullName.trim(),
-      shippingAddress: `${address.trim()}${
-        cityPostal.trim() ? `, ${cityPostal.trim()}` : ''
-      }`,
-      items: enrichedItems.map((i) => ({
-        name: i.product.name,
+      shippingAddress: fullAddress,
+      items: lineItems.map((i) => ({
+        name: i.name,
         size: i.size,
         quantity: i.quantity,
-        unitPriceUsd: i.product.priceUsd,
+        unitPriceUsd: i.unitPriceUsd,
       })),
       subtotalUsd,
       shippingUsd,
       currency,
     };
+
+    try {
+      if (onPersistOrder) {
+        await onPersistOrder({
+          orderNumber: orderNum,
+          email: email.trim(),
+          shippingName: fullName.trim(),
+          shippingAddress: fullAddress,
+          items: lineItems,
+          subtotalUsd,
+          shippingUsd,
+          currency,
+        });
+      }
+    } catch (err) {
+      console.error('Order persistence skipped or failed:', err);
+    } finally {
+      setSubmitting(false);
+    }
 
     setReceipt(newReceipt);
     onClearBag();
@@ -243,7 +300,7 @@ export function BagDrawer({
                     ) : (
                       <>
                         <span className="font-semibold text-[#171615] dark:text-[#F4F1EC]">
-                          {formatPrice(remainingForFreeUsd, currency)}
+                          {formatPrice(remainingForFreeUsd, currency, cadRate)}
                         </span>{' '}
                         away from free delivery.
                       </>
@@ -316,6 +373,7 @@ export function BagDrawer({
                                 {formatPrice(
                                   item.product.priceUsd * item.quantity,
                                   currency,
+                                  cadRate,
                                 )}
                               </p>
                             </div>
@@ -429,6 +487,7 @@ export function BagDrawer({
                                 {formatPrice(
                                   currentPairProduct.priceUsd,
                                   currency,
+                                  cadRate,
                                 )}
                               </span>
                               <select
@@ -472,7 +531,7 @@ export function BagDrawer({
                         <span className="tabular-nums font-medium text-[#171615] dark:text-[#F4F1EC]">
                           {shippingUsd === 0
                             ? 'Complimentary'
-                            : formatPrice(shippingUsd, currency)}
+                            : formatPrice(shippingUsd, currency, cadRate)}
                         </span>
                       </div>
                       <div className="flex items-baseline justify-between pt-1">
@@ -480,7 +539,7 @@ export function BagDrawer({
                           Estimated total
                         </span>
                         <span className="text-base font-semibold tabular-nums text-[#171615] dark:text-[#F4F1EC]">
-                          {formatPrice(subtotalUsd + shippingUsd, currency)}{' '}
+                          {formatPrice(subtotalUsd + shippingUsd, currency, cadRate)}{' '}
                           <span className="text-xs font-normal text-[#6D665E] dark:text-[#9E978F]">
                             {CURRENCIES[currency].shortLabel}
                           </span>
@@ -534,7 +593,7 @@ export function BagDrawer({
                             {i.quantity} × {i.product.name} ({i.size})
                           </span>
                           <span className="tabular-nums shrink-0 text-[#171615] dark:text-[#F4F1EC]">
-                            {formatPrice(i.product.priceUsd * i.quantity, currency)}
+                            {formatPrice(i.product.priceUsd * i.quantity, currency, cadRate)}
                           </span>
                         </div>
                       ))}
@@ -620,15 +679,16 @@ export function BagDrawer({
                   <div className="flex justify-between text-sm font-medium text-[#171615] dark:text-[#F4F1EC]">
                     <span>Total due</span>
                     <span className="tabular-nums">
-                      {formatPrice(subtotalUsd + shippingUsd, currency)}{' '}
+                      {formatPrice(subtotalUsd + shippingUsd, currency, cadRate)}{' '}
                       {CURRENCIES[currency].shortLabel}
                     </span>
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-3.5 bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] text-white dark:text-[#171615] text-xs font-medium tracking-[0.16em] uppercase rounded-md transition-colors cursor-pointer"
+                    disabled={submitting}
+                    className="w-full py-3.5 bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] text-white dark:text-[#171615] text-xs font-medium tracking-[0.16em] uppercase rounded-md transition-colors disabled:opacity-50 cursor-pointer"
                   >
-                    COMPLETE ORDER
+                    {submitting ? 'PROCESSING ORDER...' : 'COMPLETE ORDER'}
                   </button>
                 </div>
               </form>
