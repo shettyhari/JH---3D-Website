@@ -58,7 +58,7 @@ export class ErrorBoundary extends Component<
                   Something went wrong
                 </h2>
                 <p className="text-xs text-[#6D665E] dark:text-[#9E978F]">
-                  Jhonty Hub caught a runtime or database permission error.
+                  Jhonty Hub caught an unexpected application error.
                 </p>
               </div>
             </div>

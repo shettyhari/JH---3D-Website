@@ -7,140 +7,137 @@ import {
   useState,
 } from 'react';
 import {
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut as firebaseSignOut,
-  User,
-} from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
-import { ensureUserProfile } from '../services/storeService';
-import { MemberProfile, UserProfileRecord } from '../types';
+  DEFAULT_ADMIN_EMAIL,
+  getStoreSnapshot,
+  subscribeStore,
+  upsertSignedInUser,
+} from '../services/storeService';
+import { MemberProfile, UserProfileRecord, UserRole } from '../types';
+
+const STORAGE_SESSION_KEY = 'jhonty_hub_session_uid_v1';
 
 interface AuthContextValue {
-  firebaseUser: User | null;
-  profile: UserProfileRecord | null;
+  currentUser: UserProfileRecord | null;
   member: MemberProfile | null;
   isAdmin: boolean;
-  authReady: boolean;
-  authLoading: boolean;
-  authError: string | null;
-  signInWithGoogle: () => Promise<void>;
-  signOut: () => Promise<void>;
+  signIn: (params: { name: string; email: string; role?: UserRole }) => void;
+  signInAsAdmin: () => void;
+  signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function resolveInitialUid(): string | null {
+  try {
+    const saved = window.localStorage.getItem(STORAGE_SESSION_KEY);
+    if (saved === '__signed_out__') return null;
+    if (saved) return saved;
+  } catch {
+    // Ignore storage errors
+  }
+  const snapshot = getStoreSnapshot();
+  const defaultAdmin = snapshot.users.find(
+    (u) => u.email.toLowerCase() === DEFAULT_ADMIN_EMAIL.toLowerCase(),
+  );
+  return defaultAdmin?.uid ?? snapshot.users[0]?.uid ?? null;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfileRecord | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
+  const [activeUid, setActiveUid] = useState<string | null>(resolveInitialUid);
+  const [users, setUsers] = useState<UserProfileRecord[]>(
+    () => getStoreSnapshot().users,
+  );
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setFirebaseUser(user);
-      setAuthError(null);
-      if (!user) {
-        setProfile(null);
-        setIsAdmin(false);
-        setAuthReady(true);
-        return;
-      }
-
-      try {
-        const synced = await ensureUserProfile({
-          uid: user.uid,
-          name: user.displayName || user.email?.split('@')[0] || 'Member',
-          email: user.email || '',
-          photoURL: user.photoURL || '',
-          emailVerified: user.emailVerified,
-        });
-        setProfile(synced.profile);
-        setIsAdmin(synced.isAdmin);
-      } catch (err) {
-        console.error('Failed to sync user profile:', err);
-        setAuthError('Signed in, but profile sync encountered an error.');
-      } finally {
-        setAuthReady(true);
-      }
+    return subscribeStore((state) => {
+      setUsers(state.users);
     });
-
-    return () => unsubscribe();
   }, []);
 
-  const signInWithGoogle = useCallback(async () => {
-    setAuthLoading(true);
-    setAuthError(null);
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : 'Unable to complete Google sign-in.';
-      if (!msg.includes('popup-closed-by-user')) {
-        setAuthError(msg);
+  const currentUser = activeUid
+    ? users.find((u) => u.uid === activeUid) ?? null
+    : null;
+
+  const isAdmin =
+    Boolean(currentUser) &&
+    currentUser?.status === 'active' &&
+    (currentUser?.role === 'admin' || currentUser?.role === 'manager');
+
+  const signIn = useCallback(
+    (params: { name: string; email: string; role?: UserRole }) => {
+      const record = upsertSignedInUser(params);
+      setActiveUid(record.uid);
+      try {
+        window.localStorage.setItem(STORAGE_SESSION_KEY, record.uid);
+      } catch {
+        // Ignore storage errors
       }
-    } finally {
-      setAuthLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
-  const signOut = useCallback(async () => {
-    setAuthLoading(true);
-    setAuthError(null);
+  const signInAsAdmin = useCallback(() => {
+    const snapshot = getStoreSnapshot();
+    const existingAdmin =
+      snapshot.users.find(
+        (u) =>
+          u.email.toLowerCase() === DEFAULT_ADMIN_EMAIL.toLowerCase() &&
+          u.status === 'active',
+      ) ?? snapshot.users.find((u) => u.role === 'admin' && u.status === 'active');
+
+    if (existingAdmin) {
+      setActiveUid(existingAdmin.uid);
+      try {
+        window.localStorage.setItem(STORAGE_SESSION_KEY, existingAdmin.uid);
+      } catch {
+        // Ignore storage errors
+      }
+      return;
+    }
+
+    const created = upsertSignedInUser({
+      name: 'Studio Admin',
+      email: DEFAULT_ADMIN_EMAIL,
+      role: 'admin',
+    });
+    setActiveUid(created.uid);
     try {
-      await firebaseSignOut(auth);
-      setProfile(null);
-      setIsAdmin(false);
-    } catch (err) {
-      setAuthError(
-        err instanceof Error ? err.message : 'Unable to sign out.',
-      );
-    } finally {
-      setAuthLoading(false);
+      window.localStorage.setItem(STORAGE_SESSION_KEY, created.uid);
+    } catch {
+      // Ignore storage errors
     }
   }, []);
 
-  const member: MemberProfile | null =
-    profile && firebaseUser
-      ? {
-          uid: profile.uid,
-          name: profile.name,
-          email: profile.email,
-          photoURL: profile.photoURL || firebaseUser.photoURL || undefined,
-          tier: profile.tier,
-          role: profile.role,
-          status: profile.status,
-          isAdmin,
-        }
-      : firebaseUser
-        ? {
-            uid: firebaseUser.uid,
-            name:
-              firebaseUser.displayName ||
-              firebaseUser.email?.split('@')[0] ||
-              'Member',
-            email: firebaseUser.email || '',
-            photoURL: firebaseUser.photoURL || undefined,
-            tier: isAdmin ? 'Staff' : 'Studio Member',
-            role: isAdmin ? 'admin' : 'customer',
-            status: 'active',
-            isAdmin,
-          }
-        : null;
+  const signOut = useCallback(() => {
+    setActiveUid(null);
+    try {
+      window.localStorage.setItem(STORAGE_SESSION_KEY, '__signed_out__');
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  const member: MemberProfile | null = currentUser
+    ? {
+        uid: currentUser.uid,
+        name: currentUser.name,
+        email: currentUser.email,
+        photoURL: currentUser.photoURL || undefined,
+        tier: currentUser.tier,
+        role: currentUser.role,
+        status: currentUser.status,
+        isAdmin,
+      }
+    : null;
 
   return (
     <AuthContext.Provider
       value={{
-        firebaseUser,
-        profile,
+        currentUser,
         member,
         isAdmin,
-        authReady,
-        authLoading,
-        authError,
-        signInWithGoogle,
+        signIn,
+        signInAsAdmin,
         signOut,
       }}
     >

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { BagDrawer, CheckoutPersistPayload } from './components/BagDrawer';
 import { CatalogOverlay } from './components/CatalogOverlay';
@@ -7,17 +6,19 @@ import { Header } from './components/Header';
 import { ShowroomStage } from './components/ShowroomStage';
 import { ActiveModal, UtilityModals } from './components/UtilityModals';
 import { useAuth } from './context/AuthContext';
-import { DEFAULT_STORE_SETTINGS, PRODUCTS } from './data/products';
-import { db, handleFirestoreError, OperationType } from './firebase';
-import { createOrder, mapProductDoc } from './services/storeService';
+import { PRODUCTS } from './data/products';
+import {
+  createOrder,
+  getStoreSnapshot,
+  LocalStoreState,
+  subscribeStore,
+} from './services/storeService';
 import {
   CartItem,
   CategoryFilter,
   CurrencyCode,
   NavSection,
-  Product,
   Size,
-  StoreSettings,
   ThemeMode,
 } from './types';
 
@@ -26,7 +27,7 @@ const STORAGE_WISHLIST_KEY = 'varde_wishlist_v1';
 const STORAGE_THEME_KEY = 'jhonty_hub_theme_v1';
 
 export default function App() {
-  const { firebaseUser, member } = useAuth();
+  const { currentUser, member } = useAuth();
 
   const [activeSection, setActiveSection] = useState<NavSection>('showroom');
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('All');
@@ -36,11 +37,9 @@ export default function App() {
   const [isBagOpen, setIsBagOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
-  // Live Firestore catalog & settings (with resilient default fallback before first seed)
-  const [cloudProducts, setCloudProducts] = useState<Product[] | null>(null);
-  const [isCatalogSynced, setIsCatalogSynced] = useState(false);
-  const [storeSettings, setStoreSettings] = useState<StoreSettings>(
-    DEFAULT_STORE_SETTINGS,
+  // Reactive local store state (persisted in browser storage)
+  const [storeState, setStoreState] = useState<LocalStoreState>(() =>
+    getStoreSnapshot(),
   );
 
   const [theme, setTheme] = useState<ThemeMode>(() => {
@@ -64,82 +63,14 @@ export default function App() {
     }
   }, [theme]);
 
-  // Real-time public storefront catalog listener
   useEffect(() => {
-    const unsubProducts = onSnapshot(
-      collection(db, 'products'),
-      (snap) => {
-        if (snap.empty) {
-          setCloudProducts(null);
-          setIsCatalogSynced(false);
-        } else {
-          const list = snap.docs.map((d) =>
-            mapProductDoc(d.data() as Record<string, unknown>, d.id),
-          );
-          // Preserve canonical catalog ordering for seeded items while sorting new items cleanly
-          const defaultOrder = new Map(PRODUCTS.map((p, idx) => [p.id, idx]));
-          list.sort((a, b) => {
-            const ai = defaultOrder.has(a.id) ? defaultOrder.get(a.id)! : 999;
-            const bi = defaultOrder.has(b.id) ? defaultOrder.get(b.id)! : 999;
-            if (ai !== bi) return ai - bi;
-            return a.name.localeCompare(b.name);
-          });
-          setCloudProducts(list);
-          setIsCatalogSynced(true);
-        }
-      },
-      (err) => {
-        console.error('Products listener error:', err);
-      },
-    );
-
-    const unsubSettings = onSnapshot(
-      doc(db, 'settings', 'store'),
-      (snap) => {
-        if (snap.exists()) {
-          const raw = snap.data() as Partial<StoreSettings>;
-          setStoreSettings({
-            storeName: raw.storeName || DEFAULT_STORE_SETTINGS.storeName,
-            announcementText:
-              raw.announcementText ?? DEFAULT_STORE_SETTINGS.announcementText,
-            announcementEnabled:
-              raw.announcementEnabled ??
-              DEFAULT_STORE_SETTINGS.announcementEnabled,
-            freeDeliveryThresholdUsd: Number(
-              raw.freeDeliveryThresholdUsd ??
-                DEFAULT_STORE_SETTINGS.freeDeliveryThresholdUsd,
-            ),
-            standardShippingUsd: Number(
-              raw.standardShippingUsd ??
-                DEFAULT_STORE_SETTINGS.standardShippingUsd,
-            ),
-            cadExchangeRate: Number(
-              raw.cadExchangeRate ?? DEFAULT_STORE_SETTINGS.cadExchangeRate,
-            ),
-            lowStockDefaultThreshold: Number(
-              raw.lowStockDefaultThreshold ??
-                DEFAULT_STORE_SETTINGS.lowStockDefaultThreshold,
-            ),
-            supportEmail:
-              raw.supportEmail || DEFAULT_STORE_SETTINGS.supportEmail,
-          });
-        }
-      },
-      (err) => {
-        console.error('Store settings listener error:', err);
-      },
-    );
-
-    return () => {
-      unsubProducts();
-      unsubSettings();
-    };
+    return subscribeStore((next) => {
+      setStoreState(next);
+    });
   }, []);
 
-  const allProducts = useMemo(
-    () => (cloudProducts && cloudProducts.length > 0 ? cloudProducts : PRODUCTS),
-    [cloudProducts],
-  );
+  const allProducts = storeState.products;
+  const storeSettings = storeState.settings;
 
   // Storefront shows active products only (falls back to all if none active)
   const storefrontProducts = useMemo(() => {
@@ -294,28 +225,21 @@ export default function App() {
 
   const handlePersistOrder = useCallback(
     async (payload: CheckoutPersistPayload) => {
-      if (!firebaseUser || !firebaseUser.emailVerified) {
-        return;
-      }
-      try {
-        await createOrder({
-          orderNumber: payload.orderNumber,
-          userId: firebaseUser.uid,
-          email: payload.email,
-          shippingName: payload.shippingName,
-          shippingAddress: payload.shippingAddress,
-          items: payload.items,
-          subtotalUsd: payload.subtotalUsd,
-          shippingUsd: payload.shippingUsd,
-          currency: payload.currency,
-          status: 'pending',
-          notes: 'Placed via Storefront Express Checkout',
-        });
-      } catch (err) {
-        handleFirestoreError(err, OperationType.CREATE, 'orders');
-      }
+      await createOrder({
+        orderNumber: payload.orderNumber,
+        userId: currentUser?.uid || 'guest-checkout',
+        email: payload.email,
+        shippingName: payload.shippingName,
+        shippingAddress: payload.shippingAddress,
+        items: payload.items,
+        subtotalUsd: payload.subtotalUsd,
+        shippingUsd: payload.shippingUsd,
+        currency: payload.currency,
+        status: 'pending',
+        notes: 'Placed via Storefront Express Checkout',
+      });
     },
-    [firebaseUser],
+    [currentUser],
   );
 
   return (
@@ -346,7 +270,6 @@ export default function App() {
       {activeSection === 'admin' ? (
         <AdminPanel
           products={allProducts}
-          isCatalogSynced={isCatalogSynced}
           storeSettings={storeSettings}
           currency={currency}
           onTryInShowroom={handleTryInShowroom}

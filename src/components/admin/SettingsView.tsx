@@ -206,7 +206,7 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
           {savedNotice && (
             <span className="inline-flex items-center gap-1.5 font-medium">
               <Check className="w-3.5 h-3.5" />
-              Storefront settings published to Firestore.
+              Storefront settings saved and applied live.
             </span>
           )}
         </div>

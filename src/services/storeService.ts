@@ -1,23 +1,4 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  serverTimestamp,
-  setDoc,
-  Timestamp,
-  updateDoc,
-  writeBatch,
-} from 'firebase/firestore';
 import { DEFAULT_STORE_SETTINGS, PRODUCTS, SIZES } from '../data/products';
-import {
-  auth,
-  BOOTSTRAPPED_ADMIN_EMAIL,
-  db,
-  handleFirestoreError,
-  OperationType,
-} from '../firebase';
 import {
   CurrencyCode,
   InventoryLogEntry,
@@ -35,6 +16,20 @@ import {
   UserStatus,
   UserTier,
 } from '../types';
+
+export const DEFAULT_ADMIN_EMAIL = 'shettyharikrishna1@gmail.com';
+const STORAGE_DB_KEY = 'jhonty_hub_local_db_v1';
+
+export interface LocalStoreState {
+  products: Product[];
+  users: UserProfileRecord[];
+  orders: StoreOrder[];
+  inventoryLogs: InventoryLogEntry[];
+  settings: StoreSettings;
+}
+
+type StoreListener = (state: LocalStoreState) => void;
+const listeners = new Set<StoreListener>();
 
 function clampString(value: string, maxLen: number): string {
   return value.trim().slice(0, maxLen);
@@ -58,23 +53,6 @@ export function sanitizeSku(input: string): string {
   return cleaned.length >= 2 ? cleaned : `JH-${Date.now().toString().slice(-5)}`;
 }
 
-export function formatTimestamp(value: unknown): string {
-  if (!value) return '';
-  if (value instanceof Timestamp) {
-    return value.toDate().toISOString();
-  }
-  if (
-    typeof value === 'object' &&
-    value !== null &&
-    'toDate' in value &&
-    typeof (value as { toDate: () => Date }).toDate === 'function'
-  ) {
-    return (value as { toDate: () => Date }).toDate().toISOString();
-  }
-  if (typeof value === 'string') return value;
-  return '';
-}
-
 function normalizeStock(stock?: Partial<StockMap>): StockMap {
   return {
     XS: Math.max(0, Math.min(100000, Math.round(Number(stock?.XS ?? 0)))),
@@ -85,13 +63,294 @@ function normalizeStock(stock?: Partial<StockMap>): StockMap {
   };
 }
 
-function buildProductPayload(product: Product) {
+function createInitialState(): LocalStoreState {
+  const now = new Date();
+  const daysAgo = (days: number) =>
+    new Date(now.getTime() - days * 86_400_000).toISOString();
+
+  const initialUsers: UserProfileRecord[] = [
+    {
+      uid: 'usr-admin-primary',
+      name: 'Studio Admin',
+      email: DEFAULT_ADMIN_EMAIL,
+      photoURL: '',
+      role: 'admin',
+      tier: 'Staff',
+      status: 'active',
+      ordersCount: 0,
+      totalSpentUsd: 0,
+      createdAt: daysAgo(30),
+      updatedAt: daysAgo(1),
+    },
+    {
+      uid: 'usr-manager-clara',
+      name: 'Clara Holm',
+      email: 'clara.holm@jhontyhub.studio',
+      photoURL: '',
+      role: 'manager',
+      tier: 'Staff',
+      status: 'active',
+      ordersCount: 1,
+      totalSpentUsd: 245,
+      createdAt: daysAgo(24),
+      updatedAt: daysAgo(2),
+    },
+    {
+      uid: 'usr-customer-henrik',
+      name: 'Henrik Sorensen',
+      email: 'henrik.sorensen@nordic.dk',
+      photoURL: '',
+      role: 'customer',
+      tier: 'VIP Member',
+      status: 'active',
+      ordersCount: 2,
+      totalSpentUsd: 495,
+      createdAt: daysAgo(18),
+      updatedAt: daysAgo(1),
+    },
+    {
+      uid: 'usr-customer-maya',
+      name: 'Maya Chen',
+      email: 'maya.chen@atelier.co',
+      photoURL: '',
+      role: 'customer',
+      tier: 'Studio Member',
+      status: 'active',
+      ordersCount: 1,
+      totalSpentUsd: 165,
+      createdAt: daysAgo(10),
+      updatedAt: daysAgo(3),
+    },
+  ];
+
+  const initialOrders: StoreOrder[] = [
+    {
+      id: 'ord-seed-4823',
+      orderNumber: 'JH-4823',
+      userId: 'usr-customer-henrik',
+      email: 'henrik.sorensen@nordic.dk',
+      shippingName: 'Henrik Sorensen',
+      shippingAddress: 'Bredgade 18, 1260 Copenhagen, Denmark',
+      items: [
+        {
+          productId: PRODUCTS[3].id,
+          name: PRODUCTS[3].name,
+          size: 'L',
+          quantity: 1,
+          unitPriceUsd: PRODUCTS[3].priceUsd,
+        },
+        {
+          productId: PRODUCTS[0].id,
+          name: PRODUCTS[0].name,
+          size: 'L',
+          quantity: 1,
+          unitPriceUsd: PRODUCTS[0].priceUsd,
+        },
+      ],
+      subtotalUsd: PRODUCTS[3].priceUsd + PRODUCTS[0].priceUsd,
+      shippingUsd: 0,
+      totalUsd: PRODUCTS[3].priceUsd + PRODUCTS[0].priceUsd,
+      currency: 'USD',
+      status: 'processing',
+      trackingNumber: '',
+      notes: 'Priority garment bag requested.',
+      createdAt: daysAgo(1),
+      updatedAt: daysAgo(1),
+    },
+    {
+      id: 'ord-seed-4822',
+      orderNumber: 'JH-4822',
+      userId: 'usr-customer-maya',
+      email: 'maya.chen@atelier.co',
+      shippingName: 'Maya Chen',
+      shippingAddress: '142 Mercer Street, New York, NY 10012',
+      items: [
+        {
+          productId: PRODUCTS[2].id,
+          name: PRODUCTS[2].name,
+          size: 'M',
+          quantity: 1,
+          unitPriceUsd: PRODUCTS[2].priceUsd,
+        },
+      ],
+      subtotalUsd: PRODUCTS[2].priceUsd,
+      shippingUsd: 0,
+      totalUsd: PRODUCTS[2].priceUsd,
+      currency: 'USD',
+      status: 'shipped',
+      trackingNumber: 'DHL-884120934',
+      notes: 'Dispatched from Copenhagen studio.',
+      createdAt: daysAgo(3),
+      updatedAt: daysAgo(2),
+    },
+    {
+      id: 'ord-seed-4821',
+      orderNumber: 'JH-4821',
+      userId: 'usr-customer-henrik',
+      email: 'henrik.sorensen@nordic.dk',
+      shippingName: 'Henrik Sorensen',
+      shippingAddress: 'Bredgade 18, 1260 Copenhagen, Denmark',
+      items: [
+        {
+          productId: PRODUCTS[4].id,
+          name: PRODUCTS[4].name,
+          size: 'M',
+          quantity: 1,
+          unitPriceUsd: PRODUCTS[4].priceUsd,
+        },
+      ],
+      subtotalUsd: PRODUCTS[4].priceUsd,
+      shippingUsd: 0,
+      totalUsd: PRODUCTS[4].priceUsd,
+      currency: 'USD',
+      status: 'delivered',
+      trackingNumber: 'DHL-884019281',
+      notes: 'Signed on delivery.',
+      createdAt: daysAgo(9),
+      updatedAt: daysAgo(6),
+    },
+  ];
+
+  const initialLogs: InventoryLogEntry[] = [
+    {
+      id: 'log-seed-1',
+      productId: PRODUCTS[3].id,
+      productName: PRODUCTS[3].name,
+      size: 'L',
+      previousQty: 11,
+      delta: -1,
+      newQty: 10,
+      reason: 'sale',
+      note: 'Reserved for order JH-4823',
+      actorUid: 'usr-admin-primary',
+      actorName: 'Studio Admin',
+      createdAt: daysAgo(1),
+    },
+    {
+      id: 'log-seed-2',
+      productId: PRODUCTS[1].id,
+      productName: PRODUCTS[1].name,
+      size: 'M',
+      previousQty: 12,
+      delta: 10,
+      newQty: 22,
+      reason: 'restock',
+      note: 'Porto mill shipment #P-204 received',
+      actorUid: 'usr-manager-clara',
+      actorName: 'Clara Holm',
+      createdAt: daysAgo(4),
+    },
+    {
+      id: 'log-seed-3',
+      productId: PRODUCTS[4].id,
+      productName: PRODUCTS[4].name,
+      size: 'XS',
+      previousQty: 5,
+      delta: -2,
+      newQty: 3,
+      reason: 'adjustment',
+      note: 'Transferred 2 samples to flagship display',
+      actorUid: 'usr-admin-primary',
+      actorName: 'Studio Admin',
+      createdAt: daysAgo(7),
+    },
+  ];
+
+  return {
+    products: PRODUCTS.map((p) => ({
+      ...p,
+      stock: { ...p.stock },
+      createdAt: daysAgo(20),
+      updatedAt: daysAgo(1),
+    })),
+    users: initialUsers,
+    orders: initialOrders,
+    inventoryLogs: initialLogs,
+    settings: { ...DEFAULT_STORE_SETTINGS },
+  };
+}
+
+function loadStateFromStorage(): LocalStoreState {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_DB_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<LocalStoreState>;
+      if (
+        Array.isArray(parsed.products) &&
+        Array.isArray(parsed.users) &&
+        Array.isArray(parsed.orders) &&
+        Array.isArray(parsed.inventoryLogs) &&
+        parsed.settings
+      ) {
+        return {
+          products: parsed.products,
+          users: parsed.users,
+          orders: parsed.orders,
+          inventoryLogs: parsed.inventoryLogs,
+          settings: {
+            ...DEFAULT_STORE_SETTINGS,
+            ...parsed.settings,
+          },
+        };
+      }
+    }
+  } catch {
+    // Fallback to clean seeded state
+  }
+  const initial = createInitialState();
+  saveStateToStorage(initial);
+  return initial;
+}
+
+function saveStateToStorage(state: LocalStoreState) {
+  try {
+    window.localStorage.setItem(STORAGE_DB_KEY, JSON.stringify(state));
+  } catch {
+    // Ignore quota errors
+  }
+}
+
+let currentState: LocalStoreState = loadStateFromStorage();
+
+function commitState(updater: (prev: LocalStoreState) => LocalStoreState) {
+  currentState = updater(currentState);
+  saveStateToStorage(currentState);
+  listeners.forEach((listener) => listener(currentState));
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (event) => {
+    if (event.key === STORAGE_DB_KEY) {
+      currentState = loadStateFromStorage();
+      listeners.forEach((listener) => listener(currentState));
+    }
+  });
+}
+
+export function getStoreSnapshot(): LocalStoreState {
+  return currentState;
+}
+
+export function subscribeStore(listener: StoreListener): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export async function resetStoreToDefaults(): Promise<void> {
+  commitState(() => createInitialState());
+}
+
+function sanitizeProduct(product: Product): Product {
   const id = slugifyId(product.id, 64);
   const validSizes = (product.sizes.length > 0 ? product.sizes : SIZES).filter(
     (s): s is Size => SIZES.includes(s),
   );
+  const now = new Date().toISOString();
 
   return {
+    ...product,
     id,
     sku: sanitizeSku(product.sku),
     name: clampString(product.name, 120) || 'Untitled Garment',
@@ -124,167 +383,46 @@ function buildProductPayload(product: Product) {
     stock: normalizeStock(product.stock),
     lowStockThreshold: Math.max(
       0,
-      Math.min(1000, Math.round(Number(product.lowStockThreshold ?? 6))),
+      Math.min(500, Math.round(Number(product.lowStockThreshold) || 6)),
     ),
     isNewArrival: Boolean(product.isNewArrival),
     isBestseller: Boolean(product.isBestseller),
-    pairWithIds: (product.pairWithIds || []).slice(0, 6).map((pid) => slugifyId(pid, 64)),
-    outfitPairings: (product.outfitPairings || []).slice(0, 6).map((op) => ({
-      productId: slugifyId(op.productId, 64),
-      role: clampString(op.role, 60) || 'Pairing',
-      note: clampString(op.note, 220) || 'Curated studio pairing.',
-    })),
-    specs: {
-      fabric: clampString(product.specs.fabric, 160) || '100% Organic Cotton',
-      weight: clampString(product.specs.weight, 120) || '260 GSM',
-      origin: clampString(product.specs.origin, 160) || 'Porto, Portugal',
-      fit: clampString(product.specs.fit, 160) || 'Regular architectural fit',
-      modelNote:
-        clampString(product.specs.modelNote, 160) ||
-        'Model is 6\'1" (185 cm) wearing size M',
-      care: clampString(product.specs.care, 200) || 'Machine wash cold gentle',
-    },
-    measurements: {
-      XS: {
-        chest: Math.max(40, Math.min(250, Number(product.measurements.XS.chest) || 100)),
-        length: Math.max(30, Math.min(200, Number(product.measurements.XS.length) || 66)),
-        shoulder: Math.max(25, Math.min(120, Number(product.measurements.XS.shoulder) || 44)),
-        sleeve: Math.max(10, Math.min(120, Number(product.measurements.XS.sleeve) || 60)),
-      },
-      S: {
-        chest: Math.max(40, Math.min(250, Number(product.measurements.S.chest) || 106)),
-        length: Math.max(30, Math.min(200, Number(product.measurements.S.length) || 68)),
-        shoulder: Math.max(25, Math.min(120, Number(product.measurements.S.shoulder) || 46)),
-        sleeve: Math.max(10, Math.min(120, Number(product.measurements.S.sleeve) || 61.5)),
-      },
-      M: {
-        chest: Math.max(40, Math.min(250, Number(product.measurements.M.chest) || 112)),
-        length: Math.max(30, Math.min(200, Number(product.measurements.M.length) || 70)),
-        shoulder: Math.max(25, Math.min(120, Number(product.measurements.M.shoulder) || 48)),
-        sleeve: Math.max(10, Math.min(120, Number(product.measurements.M.sleeve) || 63)),
-      },
-      L: {
-        chest: Math.max(40, Math.min(250, Number(product.measurements.L.chest) || 118)),
-        length: Math.max(30, Math.min(200, Number(product.measurements.L.length) || 72)),
-        shoulder: Math.max(25, Math.min(120, Number(product.measurements.L.shoulder) || 50)),
-        sleeve: Math.max(10, Math.min(120, Number(product.measurements.L.sleeve) || 64.5)),
-      },
-      XL: {
-        chest: Math.max(40, Math.min(250, Number(product.measurements.XL.chest) || 124)),
-        length: Math.max(30, Math.min(200, Number(product.measurements.XL.length) || 74)),
-        shoulder: Math.max(25, Math.min(120, Number(product.measurements.XL.shoulder) || 52)),
-        sleeve: Math.max(10, Math.min(120, Number(product.measurements.XL.sleeve) || 66)),
-      },
-    },
+    pairWithIds: (product.pairWithIds || []).slice(0, 10),
+    outfitPairings: (product.outfitPairings || []).slice(0, 10),
+    createdAt: product.createdAt || now,
+    updatedAt: now,
   };
-}
-
-export function mapProductDoc(raw: Record<string, unknown>, docId: string): Product {
-  return {
-    id: String(raw.id || docId),
-    sku: String(raw.sku || `JH-${docId.slice(0, 4).toUpperCase()}`),
-    name: String(raw.name || 'Untitled'),
-    priceUsd: Number(raw.priceUsd ?? 0),
-    costUsd: Number(raw.costUsd ?? 0),
-    category: raw.category === 'Outerwear' ? 'Outerwear' : 'Tops',
-    color: String(raw.color || ''),
-    tagline: String(raw.tagline || ''),
-    description: String(raw.description || ''),
-    status: (['active', 'draft', 'archived'].includes(String(raw.status))
-      ? raw.status
-      : 'active') as ProductStatus,
-    showroomImage: String(raw.showroomImage || ''),
-    showroomViews: (raw.showroomViews as Product['showroomViews']) || {
-      front: String(raw.showroomImage || ''),
-      right: String(raw.showroomImage || ''),
-      back: String(raw.showroomImage || ''),
-      left: String(raw.showroomImage || ''),
-    },
-    productImage: String(raw.productImage || ''),
-    sizes: (Array.isArray(raw.sizes) && raw.sizes.length > 0
-      ? raw.sizes
-      : SIZES) as Size[],
-    stock: normalizeStock(raw.stock as Partial<StockMap>),
-    lowStockThreshold: Number(raw.lowStockThreshold ?? 6),
-    isNewArrival: Boolean(raw.isNewArrival),
-    isBestseller: Boolean(raw.isBestseller),
-    pairWithIds: Array.isArray(raw.pairWithIds) ? (raw.pairWithIds as string[]) : [],
-    outfitPairings: Array.isArray(raw.outfitPairings)
-      ? (raw.outfitPairings as Product['outfitPairings'])
-      : [],
-    specs: raw.specs as Product['specs'],
-    measurements: raw.measurements as Product['measurements'],
-    createdAt: formatTimestamp(raw.createdAt),
-    updatedAt: formatTimestamp(raw.updatedAt),
-  };
-}
-
-export async function seedInitialCatalogIfEmpty(): Promise<boolean> {
-  try {
-    const existingSnap = await getDocs(collection(db, 'products'));
-    if (!existingSnap.empty) return false;
-
-    const batch = writeBatch(db);
-    for (const product of PRODUCTS) {
-      const ref = doc(db, 'products', product.id);
-      batch.set(ref, {
-        ...buildProductPayload(product),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-    }
-
-    const settingsRef = doc(db, 'settings', 'store');
-    const settingsSnap = await getDoc(settingsRef);
-    if (!settingsSnap.exists()) {
-      batch.set(settingsRef, {
-        ...DEFAULT_STORE_SETTINGS,
-        updatedAt: serverTimestamp(),
-      });
-    }
-
-    await batch.commit();
-    return true;
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, 'products');
-  }
 }
 
 export async function createProduct(product: Product): Promise<void> {
-  const payload = buildProductPayload(product);
-  const path = `products/${payload.id}`;
-  try {
-    await setDoc(doc(db, 'products', payload.id), {
-      ...payload,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-  } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, path);
-  }
+  const clean = sanitizeProduct(product);
+  commitState((prev) => {
+    const exists = prev.products.some((p) => p.id === clean.id);
+    const finalProduct = exists
+      ? { ...clean, id: `${clean.id}-${Date.now().toString().slice(-4)}` }
+      : clean;
+    return {
+      ...prev,
+      products: [finalProduct, ...prev.products],
+    };
+  });
 }
 
 export async function updateProduct(product: Product): Promise<void> {
-  const payload = buildProductPayload(product);
-  const path = `products/${payload.id}`;
-  try {
-    const { id: _id, ...updatableFields } = payload;
-    await updateDoc(doc(db, 'products', payload.id), {
-      ...updatableFields,
-      updatedAt: serverTimestamp(),
-    });
-  } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, path);
-  }
+  const clean = sanitizeProduct(product);
+  commitState((prev) => ({
+    ...prev,
+    products: prev.products.map((p) =>
+      p.id === clean.id ? { ...clean, createdAt: p.createdAt || clean.createdAt } : p,
+    ),
+  }));
 }
 
 export async function deleteProduct(productId: string): Promise<void> {
-  const path = `products/${productId}`;
-  try {
-    await deleteDoc(doc(db, 'products', productId));
-  } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, path);
-  }
+  commitState((prev) => ({
+    ...prev,
+    products: prev.products.filter((p) => p.id !== productId),
+  }));
 }
 
 export async function adjustProductStock(params: {
@@ -293,200 +431,108 @@ export async function adjustProductStock(params: {
   newQty: number;
   reason: InventoryLogReason;
   note: string;
+  actorUid?: string;
+  actorName?: string;
 }): Promise<void> {
-  const { product, size, reason, note } = params;
-  const clampedQty = Math.max(0, Math.min(100000, Math.round(params.newQty)));
-  const previousQty = Math.round(product.stock[size] ?? 0);
-  const delta = clampedQty - previousQty;
+  const clampedNewQty = Math.max(0, Math.min(100000, Math.round(params.newQty)));
+  const prevQty = params.product.stock[params.size] ?? 0;
+  const delta = clampedNewQty - prevQty;
   if (delta === 0) return;
 
-  const actorUid = auth.currentUser?.uid || 'admin';
-  const actorName = clampString(
-    auth.currentUser?.displayName || auth.currentUser?.email || 'Admin',
-    120,
-  );
-  const nextStock: StockMap = {
-    ...normalizeStock(product.stock),
-    [size]: clampedQty,
+  const now = new Date().toISOString();
+  const logEntry: InventoryLogEntry = {
+    id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    productId: params.product.id,
+    productName: clampString(params.product.name, 120),
+    size: params.size,
+    previousQty: prevQty,
+    delta,
+    newQty: clampedNewQty,
+    reason: params.reason,
+    note: clampString(params.note, 300),
+    actorUid: params.actorUid || 'usr-admin-primary',
+    actorName: clampString(params.actorName || 'Studio Admin', 120),
+    createdAt: now,
   };
 
-  const logId = `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-
-  try {
-    const batch = writeBatch(db);
-    batch.update(doc(db, 'products', product.id), {
-      stock: nextStock,
-      updatedAt: serverTimestamp(),
-    });
-    batch.set(doc(db, 'inventoryLogs', logId), {
-      productId: product.id,
-      productName: clampString(product.name, 120),
-      size,
-      previousQty,
-      delta,
-      newQty: clampedQty,
-      reason,
-      note: clampString(note, 240),
-      actorUid,
-      actorName,
-      createdAt: serverTimestamp(),
-    });
-    await batch.commit();
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, `products/${product.id}`);
-  }
+  commitState((prev) => ({
+    ...prev,
+    products: prev.products.map((p) =>
+      p.id === params.product.id
+        ? {
+            ...p,
+            stock: { ...p.stock, [params.size]: clampedNewQty },
+            updatedAt: now,
+          }
+        : p,
+    ),
+    inventoryLogs: [logEntry, ...prev.inventoryLogs],
+  }));
 }
 
-export async function ensureUserProfile(params: {
-  uid: string;
+export function upsertSignedInUser(params: {
   name: string;
   email: string;
-  photoURL: string;
-  emailVerified: boolean;
-}): Promise<{ profile: UserProfileRecord; isAdmin: boolean }> {
-  const { uid, name, email, photoURL, emailVerified } = params;
-  const userPath = `users/${uid}`;
-  const isBootstrapped =
-    emailVerified && email.toLowerCase() === BOOTSTRAPPED_ADMIN_EMAIL.toLowerCase();
-
-  try {
-    let hasAdminDoc = false;
-    try {
-      const adminSnap = await getDoc(doc(db, 'admins', uid));
-      hasAdminDoc = adminSnap.exists();
-    } catch {
-      hasAdminDoc = false;
-    }
-
-    const isAdmin = Boolean(isBootstrapped || (emailVerified && hasAdminDoc));
-
-    // Ensure bootstrapped owner also has an /admins/{uid} record
-    if (isBootstrapped && !hasAdminDoc) {
-      try {
-        await setDoc(doc(db, 'admins', uid), {
-          uid,
-          email: clampString(email, 200),
-          grantedBy: uid,
-          createdAt: serverTimestamp(),
-        });
-      } catch {
-        // Bootstrapped email already satisfies isAdmin() in rules
-      }
-    }
-
-    const userRef = doc(db, 'users', uid);
-    const snap = await getDoc(userRef);
-
-    if (!snap.exists()) {
-      const initialRole: UserRole = isAdmin ? 'admin' : 'customer';
-      const initialTier: UserTier = isAdmin ? 'Staff' : 'Studio Member';
-      await setDoc(userRef, {
-        uid,
-        name: clampString(name || email.split('@')[0], 120),
-        email: clampString(email, 200),
-        photoURL: clampString(photoURL || '', 500),
-        role: initialRole,
-        tier: initialTier,
-        status: 'active',
-        ordersCount: 0,
-        totalSpentUsd: 0,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-      const nowIso = new Date().toISOString();
-      return {
-        profile: {
-          uid,
-          name: clampString(name || email.split('@')[0], 120),
-          email: clampString(email, 200),
-          photoURL: clampString(photoURL || '', 500),
-          role: initialRole,
-          tier: initialTier,
-          status: 'active',
-          ordersCount: 0,
-          totalSpentUsd: 0,
-          createdAt: nowIso,
-          updatedAt: nowIso,
-        },
-        isAdmin,
-      };
-    }
-
-    const data = snap.data();
-    const record: UserProfileRecord = {
-      uid: String(data.uid || uid),
-      name: String(data.name || name),
-      email: String(data.email || email),
-      photoURL: String(data.photoURL || photoURL || ''),
-      role: (data.role as UserRole) || (isAdmin ? 'admin' : 'customer'),
-      tier: (data.tier as UserTier) || 'Studio Member',
-      status: (data.status as UserStatus) || 'active',
-      ordersCount: Number(data.ordersCount ?? 0),
-      totalSpentUsd: Number(data.totalSpentUsd ?? 0),
-      createdAt: formatTimestamp(data.createdAt),
-      updatedAt: formatTimestamp(data.updatedAt),
-    };
-
-    // Sync bootstrapped admin's role field in /users if needed
-    if (isBootstrapped && record.role !== 'admin') {
-      await updateDoc(userRef, {
-        role: 'admin',
-        tier: 'Staff',
-        updatedAt: serverTimestamp(),
-      });
-      record.role = 'admin';
-      record.tier = 'Staff';
-    }
-
-    return { profile: record, isAdmin: isAdmin || record.role === 'admin' };
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, userPath);
+  role?: UserRole;
+}): UserProfileRecord {
+  const emailLower = params.email.trim().toLowerCase();
+  const existing = currentState.users.find(
+    (u) => u.email.toLowerCase() === emailLower,
+  );
+  if (existing) {
+    return existing;
   }
+
+  const now = new Date().toISOString();
+  const isDefaultAdmin = emailLower === DEFAULT_ADMIN_EMAIL.toLowerCase();
+  const role: UserRole = params.role ?? (isDefaultAdmin ? 'admin' : 'customer');
+  const tier: UserTier = role === 'admin' || role === 'manager' ? 'Staff' : 'Studio Member';
+
+  const newUser: UserProfileRecord = {
+    uid: `usr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    name: clampString(params.name, 120) || emailLower.split('@')[0] || 'Member',
+    email: clampString(params.email, 200),
+    photoURL: '',
+    role,
+    tier,
+    status: 'active',
+    ordersCount: 0,
+    totalSpentUsd: 0,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  commitState((prev) => ({
+    ...prev,
+    users: [newUser, ...prev.users],
+  }));
+
+  return newUser;
 }
 
 export async function updateUserByAdmin(params: {
   user: UserProfileRecord;
+  name?: string;
   role: UserRole;
   tier: UserTier;
   status: UserStatus;
-  name?: string;
 }): Promise<void> {
-  const { user, role, tier, status, name } = params;
-  const currentUid = auth.currentUser?.uid || '';
-  const path = `users/${user.uid}`;
-
-  try {
-    const batch = writeBatch(db);
-    batch.update(doc(db, 'users', user.uid), {
-      name: clampString(name ?? user.name, 120),
-      role,
-      tier,
-      status,
-      updatedAt: serverTimestamp(),
-    });
-
-    const adminRef = doc(db, 'admins', user.uid);
-    if (role === 'admin') {
-      const existingAdmin = await getDoc(adminRef);
-      if (!existingAdmin.exists()) {
-        batch.set(adminRef, {
-          uid: user.uid,
-          email: clampString(user.email, 200),
-          grantedBy: currentUid,
-          createdAt: serverTimestamp(),
-        });
-      }
-    } else if (user.uid !== currentUid) {
-      const existingAdmin = await getDoc(adminRef);
-      if (existingAdmin.exists()) {
-        batch.delete(adminRef);
-      }
-    }
-
-    await batch.commit();
-  } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, path);
-  }
+  const now = new Date().toISOString();
+  commitState((prev) => ({
+    ...prev,
+    users: prev.users.map((u) =>
+      u.uid === params.user.uid
+        ? {
+            ...u,
+            name: params.name ? clampString(params.name, 120) || u.name : u.name,
+            role: params.role,
+            tier: params.tier,
+            status: params.status,
+            updatedAt: now,
+          }
+        : u,
+    ),
+  }));
 }
 
 export async function createAdminManagedUser(params: {
@@ -496,54 +542,32 @@ export async function createAdminManagedUser(params: {
   tier: UserTier;
   status: UserStatus;
 }): Promise<void> {
-  const uid = `usr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-  const path = `users/${uid}`;
-  const currentUid = auth.currentUser?.uid || uid;
+  const now = new Date().toISOString();
+  const newUser: UserProfileRecord = {
+    uid: `usr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    name: clampString(params.name, 120),
+    email: clampString(params.email, 200),
+    photoURL: '',
+    role: params.role,
+    tier: params.tier,
+    status: params.status,
+    ordersCount: 0,
+    totalSpentUsd: 0,
+    createdAt: now,
+    updatedAt: now,
+  };
 
-  try {
-    const batch = writeBatch(db);
-    batch.set(doc(db, 'users', uid), {
-      uid,
-      name: clampString(params.name, 120),
-      email: clampString(params.email, 200),
-      photoURL: '',
-      role: params.role,
-      tier: params.tier,
-      status: params.status,
-      ordersCount: 0,
-      totalSpentUsd: 0,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-
-    if (params.role === 'admin') {
-      batch.set(doc(db, 'admins', uid), {
-        uid,
-        email: clampString(params.email, 200),
-        grantedBy: currentUid,
-        createdAt: serverTimestamp(),
-      });
-    }
-
-    await batch.commit();
-  } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, path);
-  }
+  commitState((prev) => ({
+    ...prev,
+    users: [newUser, ...prev.users],
+  }));
 }
 
 export async function deleteUserByAdmin(uid: string): Promise<void> {
-  const path = `users/${uid}`;
-  try {
-    const batch = writeBatch(db);
-    batch.delete(doc(db, 'users', uid));
-    const adminSnap = await getDoc(doc(db, 'admins', uid));
-    if (adminSnap.exists()) {
-      batch.delete(doc(db, 'admins', uid));
-    }
-    await batch.commit();
-  } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, path);
-  }
+  commitState((prev) => ({
+    ...prev,
+    users: prev.users.filter((u) => u.uid !== uid),
+  }));
 }
 
 export async function createOrder(params: {
@@ -560,7 +584,7 @@ export async function createOrder(params: {
   notes?: string;
 }): Promise<string> {
   const orderId = `ord-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-  const path = `orders/${orderId}`;
+  const now = new Date().toISOString();
 
   const cleanItems = params.items.slice(0, 25).map((item) => ({
     productId: slugifyId(item.productId, 64),
@@ -577,28 +601,66 @@ export async function createOrder(params: {
     .replace(/[^A-Z0-9-]+/g, '')
     .slice(0, 32);
 
-  try {
-    await setDoc(doc(db, 'orders', orderId), {
-      orderNumber: cleanOrderNum || `JH-${Math.floor(1000 + Math.random() * 9000)}`,
-      userId: slugifyId(params.userId, 128),
-      email: clampString(params.email, 200),
-      shippingName: clampString(params.shippingName, 120),
-      shippingAddress: clampString(params.shippingAddress, 300),
-      items: cleanItems,
-      subtotalUsd,
-      shippingUsd,
-      totalUsd: subtotalUsd + shippingUsd,
-      currency: params.currency,
-      status: params.status || 'pending',
-      trackingNumber: '',
-      notes: clampString(params.notes || '', 500),
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+  const newOrder: StoreOrder = {
+    id: orderId,
+    orderNumber:
+      cleanOrderNum || `JH-${Math.floor(1000 + Math.random() * 9000)}`,
+    userId: slugifyId(params.userId || 'guest', 128),
+    email: clampString(params.email, 200),
+    shippingName: clampString(params.shippingName, 120),
+    shippingAddress: clampString(params.shippingAddress, 300),
+    items: cleanItems,
+    subtotalUsd,
+    shippingUsd,
+    totalUsd: subtotalUsd + shippingUsd,
+    currency: params.currency,
+    status: params.status || 'pending',
+    trackingNumber: '',
+    notes: clampString(params.notes || '', 500),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  commitState((prev) => {
+    // Also decrement stock for ordered items and write audit log entries
+    const nextLogs: InventoryLogEntry[] = [];
+    const nextProducts = prev.products.map((product) => {
+      const matchingItems = cleanItems.filter((i) => i.productId === product.id);
+      if (matchingItems.length === 0) return product;
+      const nextStock = { ...product.stock };
+      matchingItems.forEach((item) => {
+        const before = nextStock[item.size] ?? 0;
+        const after = Math.max(0, before - item.quantity);
+        if (after !== before) {
+          nextStock[item.size] = after;
+          nextLogs.push({
+            id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            productId: product.id,
+            productName: product.name,
+            size: item.size,
+            previousQty: before,
+            delta: after - before,
+            newQty: after,
+            reason: 'sale',
+            note: `Order ${newOrder.orderNumber} (${newOrder.shippingName})`,
+            actorUid: newOrder.userId,
+            actorName: newOrder.shippingName || 'Checkout',
+            createdAt: now,
+          });
+        }
+      });
+      return { ...product, stock: nextStock, updatedAt: now };
     });
-    return orderId;
-  } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, path);
-  }
+
+    return {
+      ...prev,
+      products: nextProducts,
+      orders: [newOrder, ...prev.orders],
+      inventoryLogs: [...nextLogs, ...prev.inventoryLogs],
+    };
+  });
+
+  return orderId;
 }
 
 export async function updateOrderFulfillment(params: {
@@ -607,32 +669,34 @@ export async function updateOrderFulfillment(params: {
   trackingNumber: string;
   notes: string;
 }): Promise<void> {
-  const path = `orders/${params.orderId}`;
-  try {
-    await updateDoc(doc(db, 'orders', params.orderId), {
-      status: params.status,
-      trackingNumber: clampString(params.trackingNumber, 80),
-      notes: clampString(params.notes, 500),
-      updatedAt: serverTimestamp(),
-    });
-  } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, path);
-  }
+  const now = new Date().toISOString();
+  commitState((prev) => ({
+    ...prev,
+    orders: prev.orders.map((o) =>
+      o.id === params.orderId
+        ? {
+            ...o,
+            status: params.status,
+            trackingNumber: clampString(params.trackingNumber, 80),
+            notes: clampString(params.notes, 500),
+            updatedAt: now,
+          }
+        : o,
+    ),
+  }));
 }
 
 export async function deleteOrderByAdmin(orderId: string): Promise<void> {
-  const path = `orders/${orderId}`;
-  try {
-    await deleteDoc(doc(db, 'orders', orderId));
-  } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, path);
-  }
+  commitState((prev) => ({
+    ...prev,
+    orders: prev.orders.filter((o) => o.id !== orderId),
+  }));
 }
 
 export async function saveStoreSettings(settings: StoreSettings): Promise<void> {
-  const path = 'settings/store';
-  try {
-    await setDoc(doc(db, 'settings', 'store'), {
+  commitState((prev) => ({
+    ...prev,
+    settings: {
       storeName: clampString(settings.storeName, 80) || 'Jhonty Hub',
       announcementText: clampString(settings.announcementText, 200),
       announcementEnabled: Boolean(settings.announcementEnabled),
@@ -654,72 +718,6 @@ export async function saveStoreSettings(settings: StoreSettings): Promise<void> 
       ),
       supportEmail:
         clampString(settings.supportEmail, 200) || 'concierge@jhontyhub.studio',
-      updatedAt: serverTimestamp(),
-    });
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
-  }
-}
-
-export function mapUserDoc(
-  raw: Record<string, unknown>,
-  docId: string,
-): UserProfileRecord {
-  return {
-    uid: String(raw.uid || docId),
-    name: String(raw.name || 'Member'),
-    email: String(raw.email || ''),
-    photoURL: String(raw.photoURL || ''),
-    role: (raw.role as UserRole) || 'customer',
-    tier: (raw.tier as UserTier) || 'Studio Member',
-    status: (raw.status as UserStatus) || 'active',
-    ordersCount: Number(raw.ordersCount ?? 0),
-    totalSpentUsd: Number(raw.totalSpentUsd ?? 0),
-    createdAt: formatTimestamp(raw.createdAt),
-    updatedAt: formatTimestamp(raw.updatedAt),
-  };
-}
-
-export function mapOrderDoc(
-  raw: Record<string, unknown>,
-  docId: string,
-): StoreOrder {
-  return {
-    id: docId,
-    orderNumber: String(raw.orderNumber || docId),
-    userId: String(raw.userId || ''),
-    email: String(raw.email || ''),
-    shippingName: String(raw.shippingName || ''),
-    shippingAddress: String(raw.shippingAddress || ''),
-    items: Array.isArray(raw.items) ? (raw.items as OrderLineItem[]) : [],
-    subtotalUsd: Number(raw.subtotalUsd ?? 0),
-    shippingUsd: Number(raw.shippingUsd ?? 0),
-    totalUsd: Number(raw.totalUsd ?? 0),
-    currency: (raw.currency as CurrencyCode) || 'USD',
-    status: (raw.status as OrderStatus) || 'pending',
-    trackingNumber: String(raw.trackingNumber || ''),
-    notes: String(raw.notes || ''),
-    createdAt: formatTimestamp(raw.createdAt),
-    updatedAt: formatTimestamp(raw.updatedAt),
-  };
-}
-
-export function mapInventoryLogDoc(
-  raw: Record<string, unknown>,
-  docId: string,
-): InventoryLogEntry {
-  return {
-    id: docId,
-    productId: String(raw.productId || ''),
-    productName: String(raw.productName || ''),
-    size: (raw.size as Size) || 'M',
-    previousQty: Number(raw.previousQty ?? 0),
-    delta: Number(raw.delta ?? 0),
-    newQty: Number(raw.newQty ?? 0),
-    reason: (raw.reason as InventoryLogReason) || 'adjustment',
-    note: String(raw.note || ''),
-    actorUid: String(raw.actorUid || ''),
-    actorName: String(raw.actorName || 'Admin'),
-    createdAt: formatTimestamp(raw.createdAt),
-  };
+    },
+  }));
 }

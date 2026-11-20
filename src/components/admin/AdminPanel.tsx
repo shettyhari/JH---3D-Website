@@ -1,16 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-} from 'firebase/firestore';
-import {
   ArrowLeft,
   ArrowUpRight,
   Boxes,
   Copy,
-  Database,
   Eye,
   LayoutDashboard,
   Lock,
@@ -18,6 +11,7 @@ import {
   Package,
   Pencil,
   Plus,
+  RotateCcw,
   Search,
   Settings,
   ShoppingCart,
@@ -31,7 +25,6 @@ import {
   getTotalStock,
   SIZES,
 } from '../../data/products';
-import { db, handleFirestoreError, OperationType } from '../../firebase';
 import {
   adjustProductStock,
   createAdminManagedUser,
@@ -40,12 +33,11 @@ import {
   deleteOrderByAdmin,
   deleteProduct,
   deleteUserByAdmin,
-  mapInventoryLogDoc,
-  mapOrderDoc,
-  mapUserDoc,
+  getStoreSnapshot,
+  resetStoreToDefaults,
   saveStoreSettings,
-  seedInitialCatalogIfEmpty,
   slugifyId,
+  subscribeStore,
   updateOrderFulfillment,
   updateProduct,
   updateUserByAdmin,
@@ -77,7 +69,6 @@ type AdminTab =
 
 interface AdminPanelProps {
   products: Product[];
-  isCatalogSynced: boolean;
   storeSettings: StoreSettings;
   currency: CurrencyCode;
   onTryInShowroom: (productId: string) => void;
@@ -99,29 +90,25 @@ const NAV_TABS: Array<{
 
 export function AdminPanel({
   products,
-  isCatalogSynced,
   storeSettings,
   currency,
   onTryInShowroom,
   onReturnShowroom,
 }: AdminPanelProps) {
-  const {
-    firebaseUser,
-    member,
-    isAdmin,
-    authReady,
-    authLoading,
-    authError,
-    signInWithGoogle,
-    signOut,
-  } = useAuth();
+  const { currentUser, member, isAdmin, signInAsAdmin, signOut } = useAuth();
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
-  const [users, setUsers] = useState<UserProfileRecord[]>([]);
-  const [orders, setOrders] = useState<StoreOrder[]>([]);
-  const [inventoryLogs, setInventoryLogs] = useState<InventoryLogEntry[]>([]);
-  const [dataLoading, setDataLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
+  const [users, setUsers] = useState<UserProfileRecord[]>(
+    () => getStoreSnapshot().users,
+  );
+  const [orders, setOrders] = useState<StoreOrder[]>(
+    () => getStoreSnapshot().orders,
+  );
+  const [inventoryLogs, setInventoryLogs] = useState<InventoryLogEntry[]>(
+    () => getStoreSnapshot().inventoryLogs,
+  );
+  const dataLoading = false;
+  const [confirmReset, setConfirmReset] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   // Products tab state
@@ -137,81 +124,13 @@ export function AdminPanel({
     window.setTimeout(() => setToast(null), 3200);
   };
 
-  // Auto-seed catalog into Firestore on first admin login if empty
   useEffect(() => {
-    if (!authReady || !isAdmin || isCatalogSynced) return;
-    let cancelled = false;
-    setSeeding(true);
-    seedInitialCatalogIfEmpty()
-      .then((didSeed) => {
-        if (!cancelled && didSeed) {
-          showToast('Initialized 6 Jhonty Hub garments & inventory into Firestore.');
-        }
-      })
-      .catch((err) => {
-        console.error('Auto-seed error:', err);
-      })
-      .finally(() => {
-        if (!cancelled) setSeeding(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [authReady, isAdmin, isCatalogSynced]);
-
-  // Attach Admin Firestore real-time listeners strictly after authReady && isAdmin
-  useEffect(() => {
-    if (!authReady || !firebaseUser || !isAdmin) {
-      setDataLoading(false);
-      return;
-    }
-
-    setDataLoading(true);
-    let loadedUsers = false;
-    let loadedOrders = false;
-    let loadedLogs = false;
-    const checkDone = () => {
-      if (loadedUsers && loadedOrders && loadedLogs) {
-        setDataLoading(false);
-      }
-    };
-
-    const unsubUsers = onSnapshot(
-      query(collection(db, 'users'), orderBy('createdAt', 'desc')),
-      (snap) => {
-        setUsers(snap.docs.map((d) => mapUserDoc(d.data(), d.id)));
-        loadedUsers = true;
-        checkDone();
-      },
-      (err) => handleFirestoreError(err, OperationType.LIST, 'users'),
-    );
-
-    const unsubOrders = onSnapshot(
-      query(collection(db, 'orders'), orderBy('createdAt', 'desc')),
-      (snap) => {
-        setOrders(snap.docs.map((d) => mapOrderDoc(d.data(), d.id)));
-        loadedOrders = true;
-        checkDone();
-      },
-      (err) => handleFirestoreError(err, OperationType.LIST, 'orders'),
-    );
-
-    const unsubLogs = onSnapshot(
-      query(collection(db, 'inventoryLogs'), orderBy('createdAt', 'desc')),
-      (snap) => {
-        setInventoryLogs(snap.docs.map((d) => mapInventoryLogDoc(d.data(), d.id)));
-        loadedLogs = true;
-        checkDone();
-      },
-      (err) => handleFirestoreError(err, OperationType.LIST, 'inventoryLogs'),
-    );
-
-    return () => {
-      unsubUsers();
-      unsubOrders();
-      unsubLogs();
-    };
-  }, [authReady, firebaseUser, isAdmin]);
+    return subscribeStore((state) => {
+      setUsers(state.users);
+      setOrders(state.orders);
+      setInventoryLogs(state.inventoryLogs);
+    });
+  }, []);
 
   // Overview computed metrics
   const overviewMetrics = useMemo(() => {
@@ -273,18 +192,8 @@ export function AdminPanel({
   }, [products, productSearch, categoryFilter, statusFilter]);
 
   // AUTH LOADING STATE
-  if (!authReady) {
-    return (
-      <main className="flex-1 flex items-center justify-center p-8">
-        <p className="text-xs tracking-wider uppercase text-[#6D665E] dark:text-[#9E978F]">
-          Checking admin session...
-        </p>
-      </main>
-    );
-  }
-
   // SIGNED OUT GATE
-  if (!firebaseUser) {
+  if (!currentUser) {
     return (
       <main className="flex-1 flex items-center justify-center p-6 bg-[#FAF9F7] dark:bg-[#0E0D0C]">
         <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#141312] border border-black/[0.08] dark:border-white/[0.1] p-8 space-y-6">
@@ -296,24 +205,18 @@ export function AdminPanel({
               Admin Console Sign-In
             </h1>
             <p className="text-xs text-[#59534C] dark:text-[#A8A199] leading-relaxed">
-              Sign in with your authorized Google account to manage products, per-size inventory, customer orders, and staff roles.
+              Enter the studio console to manage products, per-size inventory,
+              customer orders, staff roles, and storefront settings.
             </p>
           </div>
-
-          {authError && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-700 dark:text-red-300">
-              {authError}
-            </div>
-          )}
 
           <div className="space-y-3">
             <button
               type="button"
-              disabled={authLoading}
-              onClick={() => void signInWithGoogle()}
-              className="w-full py-3 px-4 rounded-lg bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615] text-xs font-medium tracking-[0.1em] uppercase hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
+              onClick={signInAsAdmin}
+              className="w-full py-3 px-4 rounded-lg bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615] text-xs font-medium tracking-[0.1em] uppercase hover:opacity-90 transition-opacity cursor-pointer"
             >
-              {authLoading ? 'Opening Google Sign-In...' : 'Continue with Google'}
+              Sign In as Studio Admin
             </button>
 
             <button
@@ -342,25 +245,25 @@ export function AdminPanel({
             <p className="text-xs text-[#59534C] dark:text-[#A8A199] leading-relaxed">
               You are currently signed in as{' '}
               <span className="font-medium text-[#171615] dark:text-[#F4F1EC]">
-                {firebaseUser.email}
+                {currentUser.email}
               </span>{' '}
-              with a <span className="font-medium capitalize">{member?.role || 'customer'}</span> role. Ask an administrator to grant Admin permissions in Users & Roles.
+              with a <span className="font-medium capitalize">{member?.role || 'customer'}</span> role. Switch to the Studio Admin account to open operations.
             </p>
           </div>
           <div className="flex items-center gap-3 pt-1">
             <button
               type="button"
-              onClick={onReturnShowroom}
+              onClick={signInAsAdmin}
               className="flex-1 py-2.5 px-4 rounded-lg bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615] text-xs font-medium cursor-pointer"
             >
-              Return to Showroom
+              Switch to Admin
             </button>
             <button
               type="button"
-              onClick={() => void signOut()}
+              onClick={onReturnShowroom}
               className="py-2.5 px-4 rounded-lg border border-black/[0.14] dark:border-white/[0.16] text-xs font-medium cursor-pointer"
             >
-              Switch Account
+              Showroom
             </button>
           </div>
         </div>
@@ -470,10 +373,10 @@ export function AdminPanel({
         <div className="p-4 border-t border-black/[0.08] dark:border-white/[0.1] space-y-3">
           <div className="px-2">
             <p className="text-xs font-medium truncate">
-              {member?.name || firebaseUser.displayName}
+              {member?.name || currentUser.name}
             </p>
             <p className="text-[11px] text-[#6D665E] dark:text-[#9E978F] truncate">
-              {firebaseUser.email}
+              {currentUser.email}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -487,7 +390,7 @@ export function AdminPanel({
             </button>
             <button
               type="button"
-              onClick={() => void signOut()}
+              onClick={signOut}
               aria-label="Sign out"
               title="Sign out"
               className="p-2 rounded-lg border border-black/[0.12] dark:border-white/[0.14] text-[#6D665E] dark:text-[#9E978F] hover:text-[#171615] dark:hover:text-[#F4F1EC] cursor-pointer"
@@ -546,23 +449,35 @@ export function AdminPanel({
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
-            {!isCatalogSynced && (
+            {confirmReset ? (
+              <div className="inline-flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await resetStoreToDefaults();
+                    setConfirmReset(false);
+                    showToast('Restored default Jhonty Hub catalog, orders, and inventory.');
+                  }}
+                  className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-medium hover:bg-red-700 whitespace-nowrap cursor-pointer"
+                >
+                  Confirm Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmReset(false)}
+                  className="px-2.5 py-2 rounded-lg border border-black/[0.14] dark:border-white/[0.16] text-xs font-medium whitespace-nowrap cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
-                disabled={seeding}
-                onClick={async () => {
-                  setSeeding(true);
-                  try {
-                    await seedInitialCatalogIfEmpty();
-                    showToast('Synced default Jhonty Hub catalog to Firestore.');
-                  } finally {
-                    setSeeding(false);
-                  }
-                }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-black/[0.14] dark:border-white/[0.16] text-xs font-medium hover:bg-black/[0.04] dark:hover:bg-white/[0.06] whitespace-nowrap cursor-pointer"
+                onClick={() => setConfirmReset(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-black/[0.14] dark:border-white/[0.16] text-xs font-medium hover:bg-black/[0.04] dark:hover:bg-white/[0.06] whitespace-nowrap cursor-pointer"
               >
-                <Database className="w-3.5 h-3.5" />
-                <span>{seeding ? 'Syncing...' : 'Sync Default Catalog'}</span>
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Data</span>
               </button>
             )}
 
@@ -1123,7 +1038,11 @@ export function AdminPanel({
               currency={currency}
               cadRate={storeSettings.cadExchangeRate}
               onAdjustStock={async (params) => {
-                await adjustProductStock(params);
+                await adjustProductStock({
+                  ...params,
+                  actorUid: currentUser.uid,
+                  actorName: currentUser.name,
+                });
                 showToast(
                   `Updated ${params.product.name} (${params.size}) stock to ${params.newQty}.`,
                 );
@@ -1138,7 +1057,7 @@ export function AdminPanel({
               products={products}
               currency={currency}
               cadRate={storeSettings.cadExchangeRate}
-              adminUid={firebaseUser.uid}
+              adminUid={currentUser.uid}
               onUpdateOrder={async (params) => {
                 await updateOrderFulfillment(params);
                 showToast(`Order status updated to ${params.status}.`);
@@ -1159,7 +1078,7 @@ export function AdminPanel({
             <UsersView
               users={users}
               orders={orders}
-              currentAdminUid={firebaseUser.uid}
+              currentAdminUid={currentUser.uid}
               currency={currency}
               cadRate={storeSettings.cadExchangeRate}
               onUpdateUser={async (params) => {

@@ -46,8 +46,9 @@ export function UtilityModals({
   onOpenAdmin,
 }: UtilityModalsProps) {
   const [query, setQuery] = useState('');
-  const { isAdmin, authLoading, authError, signInWithGoogle, signOut } =
-    useAuth();
+  const [authName, setAuthName] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const { isAdmin, signIn, signInAsAdmin, signOut } = useAuth();
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -394,42 +395,91 @@ export function UtilityModals({
                       )}
                       <button
                         type="button"
-                        disabled={authLoading}
-                        onClick={async () => {
-                          await signOut();
+                        onClick={() => {
+                          signOut();
                           onClose();
                         }}
-                        className="w-full py-2.5 rounded-lg border border-black/[0.15] dark:border-white/[0.18] text-xs font-medium tracking-wider uppercase text-[#171615] dark:text-[#F4F1EC] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] disabled:opacity-50 cursor-pointer"
+                        className="w-full py-2.5 rounded-lg border border-black/[0.15] dark:border-white/[0.18] text-xs font-medium tracking-wider uppercase text-[#171615] dark:text-[#F4F1EC] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
                       >
-                        {authLoading ? 'Signing Out...' : 'Sign Out'}
+                        Sign Out
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="p-6 space-y-4">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!authEmail.trim()) return;
+                      signIn({
+                        name: authName.trim() || authEmail.split('@')[0],
+                        email: authEmail.trim(),
+                      });
+                      setAuthName('');
+                      setAuthEmail('');
+                      onClose();
+                    }}
+                    className="p-6 space-y-4"
+                  >
                     <p className="text-xs text-[#59534C] dark:text-[#B5AEA6] leading-relaxed">
-                      Sign in with your Google account to unlock complimentary
-                      express delivery on every order, sync orders to your
-                      account, and access staff operations if authorized.
+                      Sign in as a member for complimentary express delivery on
+                      every order, or enter directly as Studio Admin to access
+                      the operations console.
                     </p>
-                    {authError && (
-                      <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-700 dark:text-red-300">
-                        {authError}
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      disabled={authLoading}
-                      onClick={async () => {
-                        await signInWithGoogle();
-                      }}
-                      className="w-full py-3 bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] text-white dark:text-[#171615] text-xs font-medium tracking-[0.14em] uppercase rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                      {authLoading
-                        ? 'Connecting to Google...'
-                        : 'Continue with Google'}
-                    </button>
-                  </div>
+                    <div>
+                      <label
+                        htmlFor="member-name"
+                        className="block text-xs font-medium text-[#3F3B36] dark:text-[#D4CEC7] mb-1.5"
+                      >
+                        Full name
+                      </label>
+                      <input
+                        id="member-name"
+                        type="text"
+                        required
+                        value={authName}
+                        onChange={(e) => setAuthName(e.target.value)}
+                        placeholder="Henrik Sorensen"
+                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-black/[0.15] dark:border-white/[0.16] bg-white dark:bg-[#1C1A18] text-[#171615] dark:text-[#F4F1EC] placeholder:text-[#8E877F] dark:placeholder:text-[#78716A] focus:outline-none focus:border-[#171615] dark:focus:border-[#F4F1EC]"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="member-email"
+                        className="block text-xs font-medium text-[#3F3B36] dark:text-[#D4CEC7] mb-1.5"
+                      >
+                        Email address
+                      </label>
+                      <input
+                        id="member-email"
+                        type="email"
+                        required
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
+                        placeholder="henrik@jhontyhub.studio"
+                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-black/[0.15] dark:border-white/[0.16] bg-white dark:bg-[#1C1A18] text-[#171615] dark:text-[#F4F1EC] placeholder:text-[#8E877F] dark:placeholder:text-[#78716A] focus:outline-none focus:border-[#171615] dark:focus:border-[#F4F1EC]"
+                      />
+                    </div>
+                    <div className="space-y-2.5 pt-1">
+                      <button
+                        type="submit"
+                        className="w-full py-3 bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] text-white dark:text-[#171615] text-xs font-medium tracking-[0.14em] uppercase rounded-lg transition-colors cursor-pointer"
+                      >
+                        Continue as Member
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          signInAsAdmin();
+                          onOpenAdmin();
+                          onClose();
+                        }}
+                        className="w-full py-2.5 rounded-lg border border-black/[0.15] dark:border-white/[0.18] text-xs font-medium tracking-wider uppercase text-[#171615] dark:text-[#F4F1EC] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Sign In as Studio Admin</span>
+                      </button>
+                    </div>
+                  </form>
                 )}
               </>
             )}
