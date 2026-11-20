@@ -4,5 +4,6 @@ dist/
 coverage/
 .DS_Store
 *.log
+store-db.json
 .env*
 !.env.example

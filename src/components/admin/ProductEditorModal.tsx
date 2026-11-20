@@ -1,6 +1,7 @@
 import { ChangeEvent, DragEvent, useEffect, useState } from 'react';
-import { Copy, Film, ImagePlus, Trash2, Upload, X } from 'lucide-react';
+import { Copy, Film, ImagePlus, Loader2, Sparkles, Trash2, Upload, X } from 'lucide-react';
 import { PRESET_GALLERY_ASSETS, SIZES } from '../../data/products';
+import { generateProductCopyAI } from '../../services/geminiService';
 import { sanitizeSku, slugifyId } from '../../services/storeService';
 import {
   deleteShowroomVideo,
@@ -130,7 +131,34 @@ export function ProductEditorModal({
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [syncAnglesOnQuickUpload, setSyncAnglesOnQuickUpload] = useState(true);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleGenerateAI = async () => {
+    if (!form.name.trim()) {
+      setError('Please provide a product title before generating AI copy.');
+      return;
+    }
+    setError(null);
+    setIsGeneratingAI(true);
+    try {
+      const copy = await generateProductCopyAI(form.name, form.category, form.color);
+      setForm((prev) => ({
+        ...prev,
+        tagline: copy.tagline,
+        description: copy.description,
+        specs: {
+          ...prev.specs,
+          fabric: copy.fabric,
+          weight: copy.weight,
+        },
+      }));
+    } catch {
+      setError('Failed to generate AI copy. Please try again.');
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
 
   const isNew = !editingProduct;
 
@@ -824,6 +852,27 @@ export function ProductEditorModal({
 
               {/* Copy */}
               <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-[#5E402A] dark:text-[#D4BEA1]">Editorial Content</span>
+                  <button
+                    type="button"
+                    onClick={handleGenerateAI}
+                    disabled={isGeneratingAI}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-amber-400/20 text-amber-600 dark:text-amber-300 border border-amber-400/40 hover:bg-amber-400/30 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isGeneratingAI ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Crafting Luxury Copy...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3 h-3 text-amber-500" />
+                        <span>✨ Generate with Gemini AI</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <div>
                   <label className="block text-xs font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1.5">
                     Short Tagline *

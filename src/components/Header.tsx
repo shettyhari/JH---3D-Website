@@ -6,11 +6,15 @@ import {
   Search,
   ShieldCheck,
   ShoppingBag,
+  Sparkles,
   Sun,
   User,
+  Volume2,
+  VolumeX,
   X,
 } from 'lucide-react';
 import { CURRENCIES } from '../data/products';
+import { isAudioMuted, setAudioMuted, playClickSound } from '../services/soundEffects';
 import { CurrencyCode, MemberProfile, NavSection, ThemeMode } from '../types';
 import { BrandLogo } from './BrandLogo';
 
@@ -31,6 +35,7 @@ interface HeaderProps {
   onOpenWishlist: () => void;
   onOpenAbout: () => void;
   onOpenAuth: () => void;
+  onOpenAIStylist?: () => void;
 }
 
 const NAV_ITEMS: Array<{ id: NavSection; label: string }> = [
@@ -57,9 +62,20 @@ export function Header({
   onOpenWishlist,
   onOpenAbout,
   onOpenAuth,
+  onOpenAIStylist,
 }: HeaderProps) {
   const [bannerVisible, setBannerVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [muted, setMuted] = useState(() => isAudioMuted());
+
+  const handleToggleSound = () => {
+    const next = !muted;
+    setMuted(next);
+    setAudioMuted(next);
+    if (!next) {
+      playClickSound();
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#FFFBF4] dark:bg-[#160E09] border-b border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.2] transition-colors duration-200">
@@ -164,6 +180,33 @@ export function Header({
           >
             <ShieldCheck className="w-3.5 h-3.5 stroke-[1.75] text-[#B45309] dark:text-[#E5B54F]" />
             <span>ADMIN</span>
+          </button>
+
+          {onOpenAIStylist && (
+            <button
+              type="button"
+              onClick={onOpenAIStylist}
+              aria-label="Open AI Fashion Stylist consultation"
+              title="Open AI Fashion Stylist consultation"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/15 to-amber-300/15 dark:from-amber-400/20 dark:to-amber-300/10 border border-amber-500/35 dark:border-amber-400/35 text-amber-800 dark:text-amber-200 hover:scale-105 transition-all whitespace-nowrap shrink-0 cursor-pointer text-[10px] tracking-wider uppercase font-semibold shadow-sm"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+              <span className="hidden sm:inline">AI STYLIST</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handleToggleSound}
+            aria-label={muted ? 'Unmute studio sound' : 'Mute studio sound'}
+            title={muted ? 'Unmute studio sound' : 'Mute studio sound'}
+            className="p-1.5 hover:text-[#9A4A0A] dark:hover:text-[#E5B54F] transition-colors shrink-0 cursor-pointer"
+          >
+            {muted ? (
+              <VolumeX className="w-[15px] h-[15px] stroke-[1.75] opacity-50" />
+            ) : (
+              <Volume2 className="w-[15px] h-[15px] stroke-[1.75] text-[#E5B54F]" />
+            )}
           </button>
 
           <button

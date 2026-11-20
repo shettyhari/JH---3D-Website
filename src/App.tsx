@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AdminPanel } from './components/admin/AdminPanel';
+import { AIStylistDrawer } from './components/AIStylistDrawer';
 import { BagDrawer, CheckoutPersistPayload } from './components/BagDrawer';
 import { CatalogOverlay } from './components/CatalogOverlay';
 import { Header } from './components/Header';
@@ -35,6 +36,7 @@ export default function App() {
   const [selectedSize, setSelectedSize] = useState<Size>('M');
   const [currency] = useState<CurrencyCode>('INR');
   const [isBagOpen, setIsBagOpen] = useState(false);
+  const [isAIStylistOpen, setIsAIStylistOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
   // Reactive local store state (persisted in browser storage)
@@ -263,6 +265,7 @@ export default function App() {
         onOpenWishlist={() => setActiveModal('wishlist')}
         onOpenAbout={() => setActiveModal('about')}
         onOpenAuth={() => setActiveModal('auth')}
+        onOpenAIStylist={() => setIsAIStylistOpen(true)}
       />
 
       {activeSection === 'admin' ? (
@@ -288,6 +291,7 @@ export default function App() {
           onAddToBag={handleAddToBag}
           onAddMultipleToBag={handleAddMultipleToBag}
           isBagOpen={isBagOpen}
+          onOpenAIStylist={() => setIsAIStylistOpen(true)}
         />
       ) : (
         <CatalogOverlay
@@ -333,6 +337,21 @@ export default function App() {
         onTryInShowroom={handleTryInShowroom}
         onAddToBag={handleAddToBag}
         onOpenAdmin={() => setActiveSection('admin')}
+      />
+
+      {/* JH Studio AI Stylist Concierge Drawer */}
+      <AIStylistDrawer
+        isOpen={isAIStylistOpen}
+        onClose={() => setIsAIStylistOpen(false)}
+        currentProduct={
+          storefrontProducts.find((p) => p.id === activeProductId) ||
+          storefrontProducts[0]
+        }
+        allProducts={storefrontProducts}
+        currency={currency}
+        onSelectProduct={(pid) => {
+          handleTryInShowroom(pid);
+        }}
       />
     </div>
   );

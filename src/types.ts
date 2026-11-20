@@ -72,6 +72,14 @@ export interface OutfitPairing {
   note: string;
 }
 
+export interface ProductHotspot {
+  id: string;
+  title: string;
+  description: string;
+  position: [number, number, number]; // 3D coordinate [x, y, z] in WebGL space
+  viewAngleDeg?: number; // 2.5D view angle in degrees (0 = front, 90 = right, etc.)
+}
+
 export type StockMap = Record<Size, number>;
 
 export interface Product {
@@ -89,6 +97,8 @@ export interface Product {
   showroomViews: ShowroomTurnaround;
   showroomVideoId?: string;
   showroomVideoUrl?: string;
+  model3dUrl?: string;
+  hotspots?: ProductHotspot[];
   productImage: string;
   sizes: Size[];
   stock: StockMap;
