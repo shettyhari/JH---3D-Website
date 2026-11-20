@@ -1,8 +1,6 @@
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
-  Box,
-  Camera,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -25,12 +23,10 @@ import { formatPrice, SHOWROOM_BACKDROP_IMAGE, SIZES } from '../data/products';
 import { playClickSound, playGarmentSwitchSound, playTurntableTick } from '../services/soundEffects';
 import { updateProduct } from '../services/storeService';
 import { getShowroomVideoBlob, saveShowroomVideo } from '../services/videoStore';
-import { CategoryFilter, CurrencyCode, LightingMode, Product, ProductHotspot, Size } from '../types';
+import { CategoryFilter, CurrencyCode, LightingMode, Product, Size } from '../types';
 import { CompleteOutfitDrawer } from './CompleteOutfitDrawer';
-import { HotspotModal } from './HotspotModal';
 import { ResilientImage } from './ResilientImage';
 import { SizeGuideModal } from './SizeGuideModal';
-import { ThreeCanvas } from './ThreeCanvas';
 
 interface ShowroomStageProps {
   products: Product[];
@@ -131,8 +127,6 @@ export function ShowroomStage({
   isBagOpen,
   onOpenAIStylist,
 }: ShowroomStageProps) {
-  const [viewMode, setViewMode] = useState<'3d' | 'studio'>('3d');
-  const [activeHotspot, setActiveHotspot] = useState<ProductHotspot | null>(null);
   const [zoomScale, setZoomScale] = useState(1.0);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [lighting, setLighting] = useState<LightingMode>('daylight');
@@ -615,25 +609,8 @@ export function ShowroomStage({
             }`}
           />
 
-          {/* MODE 0: Interactive WebGL 3D Canvas */}
-          {viewMode === '3d' ? (
-            <div className="absolute inset-0 z-10">
-              <ThreeCanvas
-                product={activeProduct}
-                lightingMode={lighting}
-                rotationDeg={displayAngle}
-                onRotationChange={(deg) => {
-                  setDisplayAngle(deg);
-                  currentAngleRef.current = deg;
-                  targetAngleRef.current = deg;
-                }}
-                activeHotspotId={activeHotspot?.id}
-                onSelectHotspot={(hs) => setActiveHotspot(hs)}
-                zoomScale={zoomScale}
-                isAutoRotate={isAutoSpinning}
-              />
-            </div>
-          ) : activeVideoSrc ? (
+          {/* MODE 1: True 60fps Real-Human 360° Spin Video Scrubber (when video is attached) */}
+          {activeVideoSrc ? (
             /* MODE 1: True 60fps Real-Human 360° Spin Video Scrubber (when video is attached) */
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <video
@@ -785,39 +762,22 @@ export function ShowroomStage({
 
       {/* Top Bar: Centered Category Filter + Active View Badge */}
       <div className="pointer-events-none relative z-30 pt-4 sm:pt-5 px-4 sm:px-6 flex items-center justify-between gap-3">
-        {/* Left: View Mode Switcher (3D WebGL vs 360° Studio) */}
-        <div className="flex items-center gap-2 min-w-[200px]">
-          <div className="pointer-events-auto inline-flex items-center gap-1 p-1 rounded-full bg-[#26160C]/85 backdrop-blur-md border border-[#E5B54F]/35 shadow-[0_8px_22px_-8px_rgba(16,8,3,0.5)]">
-            <button
-              type="button"
-              onClick={() => {
-                playClickSound();
-                setViewMode('3d');
-              }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                viewMode === '3d'
-                  ? 'bg-gradient-to-r from-[#D4A243] via-[#E5B54F] to-[#EFC86A] text-[#1E1109] shadow-sm font-semibold'
-                  : 'text-[#F6E4C1]/80 hover:text-white'
-              }`}
-            >
-              <Box className="w-3.5 h-3.5" />
-              <span>3D WebGL</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                playClickSound();
-                setViewMode('studio');
-              }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                viewMode === 'studio'
-                  ? 'bg-gradient-to-r from-[#D4A243] via-[#E5B54F] to-[#EFC86A] text-[#1E1109] shadow-sm font-semibold'
-                  : 'text-[#F6E4C1]/80 hover:text-white'
-              }`}
-            >
-              <Camera className="w-3.5 h-3.5" />
-              <span>360° Studio</span>
-            </button>
+        {/* Left badge: active real-human mode (360° Video or Photo Angles + Zoom %) */}
+        <div className="hidden md:flex items-center gap-2 min-w-[200px]">
+          <div className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#26160C]/78 backdrop-blur-md border border-[#E5B54F]/35 text-[11px] font-medium text-[#F5D27E] shadow-[0_8px_22px_-8px_rgba(16,8,3,0.5)]">
+            <span>
+              {activeVideoSrc
+                ? `360° Real Video${videoDuration > 0 ? ` · ${videoDuration.toFixed(1)}s` : ''}`
+                : `Real Model · ${angleFrames.length} Angles`}
+            </span>
+            {isZoomed && (
+              <>
+                <span aria-hidden="true" className="h-3 w-px bg-[#E5B54F]/35" />
+                <span className="text-[#FFF5E4] tabular-nums">
+                  {Math.round(zoomScale * 100)}%
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -873,22 +833,6 @@ export function ShowroomStage({
         aria-label="Showroom viewing controls"
         className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-1.5 p-1.5 rounded-full bg-[#26160C]/72 backdrop-blur-md border border-[#E5B54F]/35 shadow-[0_12px_32px_-8px_rgba(22,12,6,0.45)]"
       >
-        <button
-          type="button"
-          onClick={() => {
-            playClickSound();
-            setViewMode((m) => (m === '3d' ? 'studio' : '3d'));
-          }}
-          title={viewMode === '3d' ? 'Switch to 360° Studio Photography' : 'Switch to Interactive WebGL 3D'}
-          className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-            viewMode === '3d'
-              ? 'bg-[#E5B54F] text-[#1E1109] shadow-sm'
-              : 'text-[#F8E7C8] hover:bg-[#E5B54F]/20 hover:text-[#FFF8EC]'
-          }`}
-        >
-          {viewMode === '3d' ? <Box className="w-4 h-4" /> : <Camera className="w-4 h-4" />}
-        </button>
-
         <label
           title={
             uploadingStageVideo
@@ -1455,8 +1399,6 @@ export function ShowroomStage({
         onAddSingleToBag={onAddToBag}
         onAddBundleToBag={onAddMultipleToBag}
       />
-      {/* Craftsmanship Hotspot Detail Popover */}
-      <HotspotModal hotspot={activeHotspot} onClose={() => setActiveHotspot(null)} />
     </section>
   );
 }
