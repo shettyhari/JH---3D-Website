@@ -2,15 +2,15 @@ import { CurrencyCode, Product, Size, StoreSettings } from '../types';
 
 export const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL'];
 
-export const FREE_DELIVERY_THRESHOLD_USD = 100;
+export const FREE_DELIVERY_THRESHOLD_USD = 8000;
 
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   storeName: 'Jhonty Hub',
-  announcementText: 'FREE DELIVERY OVER $100. ALWAYS FOR MEMBERS',
+  announcementText: 'FREE DELIVERY OVER ₹8,000. ALWAYS FOR MEMBERS',
   announcementEnabled: true,
-  freeDeliveryThresholdUsd: 100,
-  standardShippingUsd: 12,
-  cadExchangeRate: 1.36,
+  freeDeliveryThresholdUsd: 8000,
+  standardShippingUsd: 299,
+  cadExchangeRate: 1,
   lowStockDefaultThreshold: 6,
   supportEmail: 'concierge@jhontyhub.studio',
 };
@@ -19,32 +19,38 @@ export const CURRENCIES: Record<
   CurrencyCode,
   { label: string; shortLabel: string; symbol: string; rate: number }
 > = {
-  USD: {
-    label: 'US (USD)',
-    shortLabel: 'USD',
-    symbol: '$',
+  INR: {
+    label: 'IN (INR ₹)',
+    shortLabel: 'INR',
+    symbol: '₹',
     rate: 1,
-  },
-  CAD: {
-    label: 'CA (CAD)',
-    shortLabel: 'CAD',
-    symbol: '$',
-    rate: 1.36,
   },
 };
 
+const INR_WHOLE_FORMATTER = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+const INR_DECIMAL_FORMATTER = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 export function formatPrice(
-  amountUsd: number,
-  currency: CurrencyCode,
-  cadRateOverride?: number,
+  amountInr: number,
+  _currency: CurrencyCode = 'INR',
+  _rateOverride?: number,
 ): string {
-  const cfg = CURRENCIES[currency];
-  const rate =
-    currency === 'CAD' && typeof cadRateOverride === 'number'
-      ? cadRateOverride
-      : cfg.rate;
-  const converted = amountUsd * rate;
-  return `${cfg.symbol}${converted.toFixed(2)}`;
+  const safe = Number.isFinite(amountInr) ? amountInr : 0;
+  const hasPaise = Math.abs(safe % 1) > 0.001;
+  return hasPaise
+    ? INR_DECIMAL_FORMATTER.format(safe)
+    : INR_WHOLE_FORMATTER.format(Math.round(safe));
 }
 
 export function getTotalStock(product: Product): number {
@@ -124,8 +130,8 @@ export const PRODUCTS: Product[] = [
     id: 'ringer-tee',
     sku: 'JH-TOP-001',
     name: 'Ringer Tee',
-    priceUsd: 38.0,
-    costUsd: 14.5,
+    priceUsd: 3199,
+    costUsd: 1200,
     category: 'Tops',
     color: 'Chalk / Deep Navy',
     tagline: 'Heavyweight combed organic jersey with contrast rib binding.',
@@ -183,8 +189,8 @@ export const PRODUCTS: Product[] = [
     id: 'linen-shirt',
     sku: 'JH-TOP-002',
     name: 'Linen Shirt',
-    priceUsd: 78.0,
-    costUsd: 29.0,
+    priceUsd: 6499,
+    costUsd: 2450,
     category: 'Tops',
     color: 'Sky Chambray',
     tagline: 'Airy Belgian flax linen washed for immediate softness.',
@@ -242,8 +248,8 @@ export const PRODUCTS: Product[] = [
     id: 'loop-hoodie',
     sku: 'JH-TOP-003',
     name: 'Loop Hoodie',
-    priceUsd: 88.0,
-    costUsd: 33.0,
+    priceUsd: 7499,
+    costUsd: 2800,
     category: 'Tops',
     color: 'Heather Ash',
     tagline: 'Structured 460 GSM diagonal loopback French terry.',
@@ -301,8 +307,8 @@ export const PRODUCTS: Product[] = [
     id: 'breton-long-sleeve',
     sku: 'JH-TOP-004',
     name: 'Breton Long Sleeve',
-    priceUsd: 68.0,
-    costUsd: 25.0,
+    priceUsd: 5699,
+    costUsd: 2100,
     category: 'Tops',
     color: 'Ecru / Maritime Navy',
     tagline: 'Yarn-dyed horizontal stripe knit in dense interlock cotton.',
@@ -360,8 +366,8 @@ export const PRODUCTS: Product[] = [
     id: 'canvas-chore-jacket',
     sku: 'JH-OUT-005',
     name: 'Canvas Chore Jacket',
-    priceUsd: 148.0,
-    costUsd: 54.0,
+    priceUsd: 12499,
+    costUsd: 4550,
     category: 'Outerwear',
     color: 'Field Olive',
     tagline: 'Garment-dyed 12oz duck canvas utility jacket with corozo buttons.',
@@ -419,8 +425,8 @@ export const PRODUCTS: Product[] = [
     id: 'nylon-bomber',
     sku: 'JH-OUT-006',
     name: 'Nylon Bomber',
-    priceUsd: 168.0,
-    costUsd: 62.0,
+    priceUsd: 13999,
+    costUsd: 5200,
     category: 'Outerwear',
     color: 'Midnight Navy',
     tagline: 'Water-repellent Italian matte technical nylon with minimal hardware.',

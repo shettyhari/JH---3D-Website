@@ -65,7 +65,7 @@ export function BagDrawer({
   currency,
   member,
   freeDeliveryThresholdUsd = FREE_DELIVERY_THRESHOLD_USD,
-  standardShippingUsd = 12,
+  standardShippingUsd = 299,
   cadRate,
   onPersistOrder,
   onUpdateQuantity,

@@ -69,7 +69,7 @@ export function Header({
           <span className="truncate">
             {member
               ? `COMPLIMENTARY EXPRESS DELIVERY ACTIVE FOR ${member.name.toUpperCase()}`
-              : announcementText || 'FREE DELIVERY OVER $100. ALWAYS FOR MEMBERS'}
+              : announcementText || 'FREE DELIVERY OVER ₹8,000. ALWAYS FOR MEMBERS'}
           </span>
           <button
             type="button"
@@ -136,14 +136,12 @@ export function Header({
 
         {/* Right Zone: Currency, About, Theme, Search, Saved, Bag, Account */}
         <div className="flex items-center justify-end gap-2.5 sm:gap-4 lg:gap-5 flex-1 min-w-0 text-[11px] font-medium tracking-[0.1em] text-[#45413C] dark:text-[#B5AEA6]">
-          <button
-            type="button"
-            onClick={onToggleCurrency}
-            title="Switch display currency"
-            className="hidden xl:inline-flex items-center gap-1 hover:text-[#171615] dark:hover:text-[#F4F1EC] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          <span
+            title="Prices displayed in Indian Rupees (INR)"
+            className="hidden xl:inline-flex items-center gap-1 text-[#59534C] dark:text-[#A8A199] whitespace-nowrap shrink-0"
           >
             {CURRENCIES[currency].label}
-          </button>
+          </span>
 
           <button
             type="button"
@@ -314,15 +312,9 @@ export function Header({
                 </>
               )}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                onToggleCurrency();
-              }}
-              className="py-1 cursor-pointer"
-            >
+            <span className="py-1 text-[#6D665E] dark:text-[#9E978F]">
               {CURRENCIES[currency].label}
-            </button>
+            </span>
             <button
               type="button"
               onClick={() => {

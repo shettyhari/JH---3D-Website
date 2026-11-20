@@ -37,7 +37,7 @@ export function UtilityModals({
   products,
   currency,
   cadRate,
-  freeDeliveryThresholdUsd = 100,
+  freeDeliveryThresholdUsd = 8000,
   wishlistIds,
   member,
   onToggleWishlist,
@@ -310,7 +310,8 @@ export function UtilityModals({
                     <div>
                       <p className="text-[#78716A] dark:text-[#9E978F]">Delivery</p>
                       <p className="font-medium text-[#171615] dark:text-[#F4F1EC] mt-0.5">
-                        Complimentary over ${freeDeliveryThresholdUsd}
+                        Complimentary over{' '}
+                        {formatPrice(freeDeliveryThresholdUsd, currency)}
                       </p>
                     </div>
                   </div>

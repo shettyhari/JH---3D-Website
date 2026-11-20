@@ -33,7 +33,7 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('All');
   const [activeProductId, setActiveProductId] = useState<string>(PRODUCTS[0].id);
   const [selectedSize, setSelectedSize] = useState<Size>('M');
-  const [currency, setCurrency] = useState<CurrencyCode>('USD');
+  const [currency] = useState<CurrencyCode>('INR');
   const [isBagOpen, setIsBagOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
@@ -248,9 +248,7 @@ export default function App() {
         activeSection={activeSection}
         onSelectSection={setActiveSection}
         currency={currency}
-        onToggleCurrency={() =>
-          setCurrency((c) => (c === 'USD' ? 'CAD' : 'USD'))
-        }
+        onToggleCurrency={() => {}}
         theme={theme}
         onToggleTheme={() =>
           setTheme((t) => (t === 'light' ? 'dark' : 'light'))

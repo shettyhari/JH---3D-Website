@@ -18,7 +18,7 @@ import {
 } from '../types';
 
 export const DEFAULT_ADMIN_EMAIL = 'shettyharikrishna1@gmail.com';
-const STORAGE_DB_KEY = 'jhonty_hub_local_db_v1';
+const STORAGE_DB_KEY = 'jhonty_hub_local_db_v2_inr';
 
 export interface LocalStoreState {
   products: Product[];
@@ -91,7 +91,7 @@ function createInitialState(): LocalStoreState {
       tier: 'Staff',
       status: 'active',
       ordersCount: 1,
-      totalSpentUsd: 245,
+      totalSpentUsd: 13999,
       createdAt: daysAgo(24),
       updatedAt: daysAgo(2),
     },
@@ -104,7 +104,7 @@ function createInitialState(): LocalStoreState {
       tier: 'VIP Member',
       status: 'active',
       ordersCount: 2,
-      totalSpentUsd: 495,
+      totalSpentUsd: 21397,
       createdAt: daysAgo(18),
       updatedAt: daysAgo(1),
     },
@@ -117,7 +117,7 @@ function createInitialState(): LocalStoreState {
       tier: 'Studio Member',
       status: 'active',
       ordersCount: 1,
-      totalSpentUsd: 165,
+      totalSpentUsd: 7499,
       createdAt: daysAgo(10),
       updatedAt: daysAgo(3),
     },
@@ -150,7 +150,7 @@ function createInitialState(): LocalStoreState {
       subtotalUsd: PRODUCTS[3].priceUsd + PRODUCTS[0].priceUsd,
       shippingUsd: 0,
       totalUsd: PRODUCTS[3].priceUsd + PRODUCTS[0].priceUsd,
-      currency: 'USD',
+      currency: 'INR',
       status: 'processing',
       trackingNumber: '',
       notes: 'Priority garment bag requested.',
@@ -163,7 +163,7 @@ function createInitialState(): LocalStoreState {
       userId: 'usr-customer-maya',
       email: 'maya.chen@atelier.co',
       shippingName: 'Maya Chen',
-      shippingAddress: '142 Mercer Street, New York, NY 10012',
+      shippingAddress: '142 Indiranagar 100ft Rd, Bengaluru 560038',
       items: [
         {
           productId: PRODUCTS[2].id,
@@ -176,10 +176,10 @@ function createInitialState(): LocalStoreState {
       subtotalUsd: PRODUCTS[2].priceUsd,
       shippingUsd: 0,
       totalUsd: PRODUCTS[2].priceUsd,
-      currency: 'USD',
+      currency: 'INR',
       status: 'shipped',
-      trackingNumber: 'DHL-884120934',
-      notes: 'Dispatched from Copenhagen studio.',
+      trackingNumber: 'BLUEDART-884120934',
+      notes: 'Dispatched from Mumbai studio.',
       createdAt: daysAgo(3),
       updatedAt: daysAgo(2),
     },
@@ -202,7 +202,7 @@ function createInitialState(): LocalStoreState {
       subtotalUsd: PRODUCTS[4].priceUsd,
       shippingUsd: 0,
       totalUsd: PRODUCTS[4].priceUsd,
-      currency: 'USD',
+      currency: 'INR',
       status: 'delivered',
       trackingNumber: 'DHL-884019281',
       notes: 'Signed on delivery.',
@@ -354,8 +354,8 @@ function sanitizeProduct(product: Product): Product {
     id,
     sku: sanitizeSku(product.sku),
     name: clampString(product.name, 120) || 'Untitled Garment',
-    priceUsd: Math.max(0, Math.min(100000, Number(product.priceUsd) || 0)),
-    costUsd: Math.max(0, Math.min(100000, Number(product.costUsd) || 0)),
+    priceUsd: Math.max(0, Math.min(10000000, Number(product.priceUsd) || 0)),
+    costUsd: Math.max(0, Math.min(10000000, Number(product.costUsd) || 0)),
     category: product.category === 'Outerwear' ? 'Outerwear' : 'Tops',
     color: clampString(product.color, 80) || 'Neutral',
     tagline: clampString(product.tagline, 240) || 'Architectural menswear piece.',
@@ -702,16 +702,13 @@ export async function saveStoreSettings(settings: StoreSettings): Promise<void> 
       announcementEnabled: Boolean(settings.announcementEnabled),
       freeDeliveryThresholdUsd: Math.max(
         0,
-        Math.min(10000, Number(settings.freeDeliveryThresholdUsd) || 0),
+        Math.min(500000, Number(settings.freeDeliveryThresholdUsd) || 0),
       ),
       standardShippingUsd: Math.max(
         0,
-        Math.min(500, Number(settings.standardShippingUsd) || 0),
+        Math.min(50000, Number(settings.standardShippingUsd) || 0),
       ),
-      cadExchangeRate: Math.max(
-        0.1,
-        Math.min(10, Number(settings.cadExchangeRate) || 1.36),
-      ),
+      cadExchangeRate: 1,
       lowStockDefaultThreshold: Math.max(
         0,
         Math.min(500, Math.round(Number(settings.lowStockDefaultThreshold) || 6)),

@@ -27,8 +27,8 @@ function buildBlankProduct(): Product {
     id: '',
     sku: `JH-NEW-${Math.floor(100 + Math.random() * 900)}`,
     name: '',
-    priceUsd: 95,
-    costUsd: 34,
+    priceUsd: 4999,
+    costUsd: 1850,
     category: 'Tops',
     color: 'Warm Stone',
     tagline: 'Architectural everyday silhouette milled in Portugal.',
@@ -316,13 +316,13 @@ export function ProductEditorModal({
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-[#FAF9F7] dark:bg-[#191816] border border-black/[0.06] dark:border-white/[0.08]">
                 <div>
                   <label className="block text-xs font-medium text-[#45413C] dark:text-[#C8C2BA] mb-1">
-                    Retail (USD)
+                    Retail (INR ₹)
                   </label>
                   <input
                     type="number"
                     min={0}
-                    max={100000}
-                    step="0.5"
+                    max={10000000}
+                    step="1"
                     required
                     value={form.priceUsd}
                     onChange={(e) =>
@@ -336,13 +336,13 @@ export function ProductEditorModal({
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#45413C] dark:text-[#C8C2BA] mb-1">
-                    Unit Cost (USD)
+                    Unit Cost (INR ₹)
                   </label>
                   <input
                     type="number"
                     min={0}
-                    max={100000}
-                    step="0.5"
+                    max={10000000}
+                    step="1"
                     required
                     value={form.costUsd}
                     onChange={(e) =>

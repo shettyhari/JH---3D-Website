@@ -108,23 +108,23 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
       <div className="rounded-xl bg-white dark:bg-[#141312] border border-black/[0.08] dark:border-white/[0.1] p-6 space-y-5">
         <div>
           <h3 className="text-sm font-semibold">
-            Shipping, Currency & Inventory Rules
+            Shipping & Inventory Rules (INR)
           </h3>
           <p className="text-xs text-[#6D665E] dark:text-[#9E978F] mt-0.5">
-            Controls checkout shipping thresholds, CAD conversion, and default low-stock alerts.
+            Controls checkout shipping thresholds in Indian Rupees (₹) and default low-stock alerts.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
             <label className="block font-medium mb-1.5">
-              Free Delivery Threshold (USD)
+              Free Delivery Threshold (INR ₹)
             </label>
             <input
               type="number"
               min={0}
-              max={10000}
-              step="1"
+              max={500000}
+              step="100"
               value={form.freeDeliveryThresholdUsd}
               onChange={(e) =>
                 setForm((prev) => ({
@@ -138,38 +138,18 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
 
           <div>
             <label className="block font-medium mb-1.5">
-              Standard Shipping Rate (USD)
+              Standard Shipping Rate (INR ₹)
             </label>
             <input
               type="number"
               min={0}
-              max={500}
-              step="1"
+              max={50000}
+              step="10"
               value={form.standardShippingUsd}
               onChange={(e) =>
                 setForm((prev) => ({
                   ...prev,
                   standardShippingUsd: Math.max(0, Number(e.target.value) || 0),
-                }))
-              }
-              className="w-full px-3 py-2 text-sm font-mono tabular-nums rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"
-            />
-          </div>
-
-          <div>
-            <label className="block font-medium mb-1.5">
-              USD → CAD Exchange Rate
-            </label>
-            <input
-              type="number"
-              min={0.1}
-              max={10}
-              step="0.01"
-              value={form.cadExchangeRate}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  cadExchangeRate: Math.max(0.1, Number(e.target.value) || 1.36),
                 }))
               }
               className="w-full px-3 py-2 text-sm font-mono tabular-nums rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"

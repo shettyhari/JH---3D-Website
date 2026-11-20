@@ -2,7 +2,7 @@ export type Size = 'XS' | 'S' | 'M' | 'L' | 'XL';
 
 export type CategoryFilter = 'All' | 'Tops' | 'Outerwear';
 
-export type CurrencyCode = 'USD' | 'CAD';
+export type CurrencyCode = 'INR';
 
 export type NavSection =
   | 'showroom'
