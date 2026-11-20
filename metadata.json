@@ -1,0 +1,6 @@
+{
+  "name": "VARDE",
+  "description": "Architectural menswear showroom with interactive virtual try-on, curated wardrobe essentials, and seamless shopping.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
