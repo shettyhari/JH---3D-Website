@@ -4,6 +4,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Disc,
   Film,
   Heart,
   Info,
@@ -26,6 +27,7 @@ import { getShowroomVideoBlob, saveShowroomVideo } from '../services/videoStore'
 import { CategoryFilter, CurrencyCode, LightingMode, Product, Size } from '../types';
 import { CompleteOutfitDrawer } from './CompleteOutfitDrawer';
 import { ResilientImage } from './ResilientImage';
+import { RingStageHero } from './RingStageHero';
 import { SizeGuideModal } from './SizeGuideModal';
 
 interface ShowroomStageProps {
@@ -127,6 +129,7 @@ export function ShowroomStage({
   isBagOpen,
   onOpenAIStylist,
 }: ShowroomStageProps) {
+  const [stageView, setStageView] = useState<'ring' | 'detail'>('ring');
   const [zoomScale, setZoomScale] = useState(1.0);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [lighting, setLighting] = useState<LightingMode>('daylight');
@@ -565,9 +568,112 @@ export function ShowroomStage({
         isBagOpen || isOutfitDrawerOpen ? 'blur-[5px] scale-[1.005]' : ''
       }`}
     >
-      {/* Full-Bleed Unified Brown, Gold & Amber Architectural Showroom + Real Photorealistic Human */}
-      <div
-        ref={stageContainerRef}
+      {/* Top Bar: Centered Category Filter + View Switcher + AI Stylist */}
+      <div className="pointer-events-none relative z-40 pt-4 sm:pt-5 px-4 sm:px-6 flex items-center justify-between gap-3">
+        {/* Left: 3D Ring Stage vs Studio Focus Switcher */}
+        <div className="flex items-center gap-2 min-w-[200px]">
+          <div className="pointer-events-auto inline-flex items-center gap-1 p-1 rounded-full bg-[#26160C]/85 backdrop-blur-md border border-[#E5B54F]/35 shadow-[0_8px_22px_-8px_rgba(16,8,3,0.5)]">
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setStageView('ring');
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                stageView === 'ring'
+                  ? 'bg-gradient-to-r from-[#D4A243] via-[#E5B54F] to-[#EFC86A] text-[#1E1109] shadow-sm font-semibold'
+                  : 'text-[#F6E4C1]/80 hover:text-white'
+              }`}
+            >
+              <Disc className="w-3.5 h-3.5" />
+              <span>3D Ring Stage</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setStageView('detail');
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                stageView === 'detail'
+                  ? 'bg-gradient-to-r from-[#D4A243] via-[#E5B54F] to-[#EFC86A] text-[#1E1109] shadow-sm font-semibold'
+                  : 'text-[#F6E4C1]/80 hover:text-white'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Studio Focus</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Top-Center Category Filter Switcher (All / Tops / Outerwear) */}
+        <div
+          role="tablist"
+          aria-label="Garment category filter"
+          className="pointer-events-auto mx-auto md:mx-0 inline-flex items-center gap-1 p-1 rounded-full bg-[#26160C]/76 backdrop-blur-md border border-[#E5B54F]/35 shadow-[0_10px_28px_-8px_rgba(22,12,6,0.5)]"
+        >
+          {CATEGORIES.map((category) => {
+            const isSelected = activeCategory === category;
+            return (
+              <button
+                key={category}
+                type="button"
+                role="tab"
+                aria-selected={isSelected}
+                onClick={() => onSelectCategory(category)}
+                className={`relative px-4 py-1.5 text-xs font-medium rounded-full transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  isSelected ? 'text-[#1E1109]' : 'text-[#F6E4C1]/90 hover:text-[#FFF8EC]'
+                }`}
+              >
+                {isSelected && (
+                  <motion.span
+                    layoutId="showroomCategoryPill"
+                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                    className="absolute inset-0 rounded-full bg-gradient-to-r from-[#D4A243] via-[#E5B54F] to-[#EFC86A] shadow-sm"
+                  />
+                )}
+                <span className="relative z-10">{category}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right: AI Stylist consultation button */}
+        <div className="pointer-events-auto flex items-center gap-2 min-w-[200px] justify-end">
+          {onOpenAIStylist && (
+            <button
+              type="button"
+              onClick={onOpenAIStylist}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#26160C]/90 to-[#3A2214]/90 backdrop-blur-md border border-[#E5B54F]/50 text-[#F5D27E] hover:border-[#E5B54F] hover:shadow-lg hover:shadow-amber-500/20 transition-all text-xs font-medium cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              <span>AI Stylist</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {stageView === 'ring' ? (
+        <div className="absolute inset-0 pt-14">
+          <RingStageHero
+            products={filteredProducts}
+            activeProductId={activeProductId}
+            onSelectProduct={onSelectProduct}
+            selectedSize={selectedSize}
+            onSelectSize={onSelectSize}
+            currency={currency}
+            lighting={lighting}
+            onAddToBag={onAddToBag}
+            onOpenAIStylist={onOpenAIStylist}
+            onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+            onOpenOutfitDrawer={() => setIsOutfitDrawerOpen(true)}
+          />
+        </div>
+      ) : (
+        <>
+          {/* Full-Bleed Unified Brown, Gold & Amber Architectural Showroom + Real Photorealistic Human */}
+          <div
+            ref={stageContainerRef}
         onPointerDown={handleStagePointerDown}
         onPointerMove={handleStagePointerMove}
         onPointerUp={handleStagePointerEnd}
@@ -758,74 +864,6 @@ export function ShowroomStage({
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#1A0E07]/48 via-[#2A1810]/12 to-transparent"
         />
-      </div>
-
-      {/* Top Bar: Centered Category Filter + Active View Badge */}
-      <div className="pointer-events-none relative z-30 pt-4 sm:pt-5 px-4 sm:px-6 flex items-center justify-between gap-3">
-        {/* Left badge: active real-human mode (360° Video or Photo Angles + Zoom %) */}
-        <div className="hidden md:flex items-center gap-2 min-w-[200px]">
-          <div className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#26160C]/78 backdrop-blur-md border border-[#E5B54F]/35 text-[11px] font-medium text-[#F5D27E] shadow-[0_8px_22px_-8px_rgba(16,8,3,0.5)]">
-            <span>
-              {activeVideoSrc
-                ? `360° Real Video${videoDuration > 0 ? ` · ${videoDuration.toFixed(1)}s` : ''}`
-                : `Real Model · ${angleFrames.length} Angles`}
-            </span>
-            {isZoomed && (
-              <>
-                <span aria-hidden="true" className="h-3 w-px bg-[#E5B54F]/35" />
-                <span className="text-[#FFF5E4] tabular-nums">
-                  {Math.round(zoomScale * 100)}%
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Top-Center Category Filter Switcher (All / Tops / Outerwear) */}
-        <div
-          role="tablist"
-          aria-label="Garment category filter"
-          className="pointer-events-auto mx-auto md:mx-0 inline-flex items-center gap-1 p-1 rounded-full bg-[#26160C]/76 backdrop-blur-md border border-[#E5B54F]/35 shadow-[0_10px_28px_-8px_rgba(22,12,6,0.5)]"
-        >
-          {CATEGORIES.map((category) => {
-            const isSelected = activeCategory === category;
-            return (
-              <button
-                key={category}
-                type="button"
-                role="tab"
-                aria-selected={isSelected}
-                onClick={() => onSelectCategory(category)}
-                className={`relative px-4 py-1.5 text-xs font-medium rounded-full transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  isSelected ? 'text-[#1E1109]' : 'text-[#F6E4C1]/90 hover:text-[#FFF8EC]'
-                }`}
-              >
-                {isSelected && (
-                  <motion.span
-                    layoutId="showroomCategoryPill"
-                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-[#D4A243] via-[#E5B54F] to-[#EFC86A] shadow-sm"
-                  />
-                )}
-                <span className="relative z-10">{category}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Right: AI Stylist consultation button */}
-        <div className="pointer-events-auto flex items-center gap-2 min-w-[200px] justify-end">
-          {onOpenAIStylist && (
-            <button
-              type="button"
-              onClick={onOpenAIStylist}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#26160C]/90 to-[#3A2214]/90 backdrop-blur-md border border-[#E5B54F]/50 text-[#F5D27E] hover:border-[#E5B54F] hover:shadow-lg hover:shadow-amber-500/20 transition-all text-xs font-medium cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              <span>AI Stylist</span>
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Left Vertical Showroom Utility Pill */}
@@ -1377,6 +1415,8 @@ export function ShowroomStage({
           })}
         </div>
       </div>
+        </>
+      )}
 
       {/* Garment Size Guide Modal */}
       <SizeGuideModal
