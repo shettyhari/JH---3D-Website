@@ -51,6 +51,10 @@
   font-variant-numeric: tabular-nums;
 }
 
+.uhd-crisp {
+  image-rendering: -webkit-optimize-contrast;
+}
+
 /* Warm brown & gold scrollbar for drawers and panels */
 ::-webkit-scrollbar {
   width: 6px;

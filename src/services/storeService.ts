@@ -470,16 +470,34 @@ function sanitizeProduct(product: Product): Product {
       front: sanitizeImageSource(
         product.showroomViews.front || product.showroomImage,
       ),
+      ...(product.showroomViews.frontRight
+        ? { frontRight: sanitizeImageSource(product.showroomViews.frontRight) }
+        : {}),
       right: sanitizeImageSource(
         product.showroomViews.right || product.showroomImage,
       ),
+      ...(product.showroomViews.backRight
+        ? { backRight: sanitizeImageSource(product.showroomViews.backRight) }
+        : {}),
       back: sanitizeImageSource(
         product.showroomViews.back || product.showroomImage,
       ),
+      ...(product.showroomViews.backLeft
+        ? { backLeft: sanitizeImageSource(product.showroomViews.backLeft) }
+        : {}),
       left: sanitizeImageSource(
         product.showroomViews.left || product.showroomImage,
       ),
+      ...(product.showroomViews.frontLeft
+        ? { frontLeft: sanitizeImageSource(product.showroomViews.frontLeft) }
+        : {}),
     },
+    ...(product.showroomVideoId
+      ? { showroomVideoId: clampString(product.showroomVideoId, 120) }
+      : { showroomVideoId: undefined }),
+    ...(product.showroomVideoUrl
+      ? { showroomVideoUrl: clampString(product.showroomVideoUrl, 2000) }
+      : { showroomVideoUrl: undefined }),
     productImage: sanitizeImageSource(
       product.productImage || product.showroomImage,
     ),

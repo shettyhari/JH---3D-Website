@@ -57,9 +57,13 @@ export interface SizeMeasurement {
 
 export interface ShowroomTurnaround {
   front: string;
+  frontRight?: string;
   right: string;
+  backRight?: string;
   back: string;
+  backLeft?: string;
   left: string;
+  frontLeft?: string;
 }
 
 export interface OutfitPairing {
@@ -83,6 +87,8 @@ export interface Product {
   status: ProductStatus;
   showroomImage: string;
   showroomViews: ShowroomTurnaround;
+  showroomVideoId?: string;
+  showroomVideoUrl?: string;
   productImage: string;
   sizes: Size[];
   stock: StockMap;

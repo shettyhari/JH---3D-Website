@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Shirt } from 'lucide-react';
 
 interface ResilientImageProps {
@@ -7,6 +7,8 @@ interface ResilientImageProps {
   className?: string;
   fallbackTitle?: string;
   loading?: 'eager' | 'lazy';
+  decoding?: 'sync' | 'async' | 'auto';
+  fetchPriority?: 'high' | 'low' | 'auto';
 }
 
 export function ResilientImage({
@@ -15,8 +17,14 @@ export function ResilientImage({
   className = '',
   fallbackTitle,
   loading = 'eager',
+  decoding = 'sync',
+  fetchPriority,
 }: ResilientImageProps) {
   const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
 
   if (hasError || !src) {
     return (
@@ -38,6 +46,8 @@ export function ResilientImage({
       src={src}
       alt={alt}
       loading={loading}
+      decoding={decoding}
+      fetchPriority={fetchPriority}
       referrerPolicy="no-referrer"
       onError={() => setHasError(true)}
       className={className}

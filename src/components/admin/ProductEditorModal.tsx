@@ -1,11 +1,16 @@
 import { ChangeEvent, DragEvent, useEffect, useState } from 'react';
-import { Copy, ImagePlus, Upload, X } from 'lucide-react';
+import { Copy, Film, ImagePlus, Trash2, Upload, X } from 'lucide-react';
 import { PRESET_GALLERY_ASSETS, SIZES } from '../../data/products';
 import { sanitizeSku, slugifyId } from '../../services/storeService';
+import {
+  deleteShowroomVideo,
+  getShowroomVideoBlob,
+  saveShowroomVideo,
+} from '../../services/videoStore';
 import { Product, ProductStatus, Size } from '../../types';
 import { ResilientImage } from '../ResilientImage';
 
-async function compressImageFile(file: File, maxDimension = 960): Promise<string> {
+async function compressImageFile(file: File, maxDimension = 1800): Promise<string> {
   const rawDataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
@@ -36,11 +41,13 @@ async function compressImageFile(file: File, maxDimension = 960): Promise<string
           resolve(rawDataUrl);
           return;
         }
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         // Subtle studio backdrop for transparent PNGs when converting to JPEG
         ctx.fillStyle = '#F6EDE0';
         ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.84));
+        resolve(canvas.toDataURL('image/jpeg', 0.92));
       } catch {
         resolve(rawDataUrl);
       }
@@ -119,6 +126,8 @@ export function ProductEditorModal({
   const [activeTab, setActiveTab] = useState<'details' | 'media' | 'specs'>('details');
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [syncAnglesOnQuickUpload, setSyncAnglesOnQuickUpload] = useState(true);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -136,6 +145,33 @@ export function ProductEditorModal({
       setForm(buildBlankProduct());
     }
   }, [isOpen, editingProduct]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let objectUrl: string | null = null;
+    let cancelled = false;
+
+    if (form.showroomVideoId) {
+      void getShowroomVideoBlob(form.showroomVideoId).then((blob) => {
+        if (cancelled) return;
+        if (blob) {
+          objectUrl = URL.createObjectURL(blob);
+          setVideoPreviewUrl(objectUrl);
+        } else {
+          setVideoPreviewUrl(form.showroomVideoUrl || null);
+        }
+      });
+    } else if (form.showroomVideoUrl) {
+      setVideoPreviewUrl(form.showroomVideoUrl);
+    } else {
+      setVideoPreviewUrl(null);
+    }
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [isOpen, form.showroomVideoId, form.showroomVideoUrl]);
 
   if (!isOpen) return null;
 
@@ -156,7 +192,16 @@ export function ProductEditorModal({
   };
 
   const handleUploadSingleSlot = async (
-    slot: 'productImage' | 'front' | 'right' | 'back' | 'left',
+    slot:
+      | 'productImage'
+      | 'front'
+      | 'frontRight'
+      | 'right'
+      | 'backRight'
+      | 'back'
+      | 'backLeft'
+      | 'left'
+      | 'frontLeft',
     file: File | undefined,
   ) => {
     if (!file) return;
@@ -186,6 +231,39 @@ export function ProductEditorModal({
     } finally {
       setUploadingPhoto(false);
     }
+  };
+
+  const handleUpload360Video = async (file: File | undefined) => {
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      setError('Please choose a valid video file (MP4, WebM, or MOV).');
+      return;
+    }
+    setError(null);
+    setUploadingVideo(true);
+    try {
+      const videoId = await saveShowroomVideo(file);
+      setForm((prev) => ({
+        ...prev,
+        showroomVideoId: videoId,
+      }));
+    } catch {
+      setError('Could not store that video locally. Try a smaller MP4/WebM clip.');
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
+  const handleRemove360Video = async () => {
+    if (form.showroomVideoId) {
+      await deleteShowroomVideo(form.showroomVideoId);
+    }
+    setForm((prev) => ({
+      ...prev,
+      showroomVideoId: undefined,
+      showroomVideoUrl: undefined,
+    }));
+    setVideoPreviewUrl(null);
   };
 
   const handleQuickPhotosUpload = async (fileList: FileList | null) => {
@@ -448,6 +526,27 @@ export function ProductEditorModal({
                           disabled={uploadingPhoto}
                           onChange={(e: ChangeEvent<HTMLInputElement>) => {
                             void handleQuickPhotosUpload(e.target.files);
+                            e.target.value = '';
+                          }}
+                          className="sr-only"
+                        />
+                      </label>
+
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#C6922E]/45 dark:border-[#D4A243]/35 bg-[#FFFBF4] dark:bg-[#1B110B] text-xs font-medium hover:bg-[#EFE1C9] dark:hover:bg-[#2E1D12] cursor-pointer">
+                        <Film className="w-3.5 h-3.5 text-[#B45309] dark:text-[#E5B54F]" />
+                        <span>
+                          {uploadingVideo
+                            ? 'Saving Video...'
+                            : videoPreviewUrl
+                              ? '360° Video Attached'
+                              : 'Add 360° Video'}
+                        </span>
+                        <input
+                          type="file"
+                          accept="video/mp4,video/webm,video/quicktime,video/*"
+                          disabled={uploadingVideo}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            void handleUpload360Video(e.target.files?.[0]);
                             e.target.value = '';
                           }}
                           className="sr-only"
@@ -796,6 +895,73 @@ export function ProductEditorModal({
                 </div>
               </div>
 
+              {/* Real-Human 360° Turnaround Video Uploader */}
+              <div className="p-4 rounded-xl bg-[#F6EDE0] dark:bg-[#23160E] border border-[#C6922E]/35 dark:border-[#E5B54F]/30 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-semibold flex items-center gap-1.5">
+                      <Film className="w-3.5 h-3.5 text-[#B45309] dark:text-[#E5B54F]" />
+                      <span>360° Real-Human Spin Video (Smoothest Rotation)</span>
+                    </p>
+                    <p className="text-[11px] text-[#7D5B3F] dark:text-[#B99A74] mt-0.5">
+                      Upload a short 5–10s MP4/WebM video of a real model turning 360°. Shoppers can drag frame-by-frame to rotate smoothly.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3B2314] dark:bg-[#E0AD42] text-[#FFF8EC] dark:text-[#1B1009] text-xs font-semibold hover:opacity-92 cursor-pointer">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{uploadingVideo ? 'Saving...' : 'Upload Video'}</span>
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime,video/*"
+                        disabled={uploadingVideo}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                          void handleUpload360Video(e.target.files?.[0]);
+                          e.target.value = '';
+                        }}
+                        className="sr-only"
+                      />
+                    </label>
+                    {videoPreviewUrl && (
+                      <button
+                        type="button"
+                        onClick={() => void handleRemove360Video()}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-500/30 text-red-700 dark:text-red-300 text-xs font-medium hover:bg-red-500/10 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Remove</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {videoPreviewUrl && (
+                  <div className="rounded-lg overflow-hidden bg-black/90 border border-[#C6922E]/30 max-h-[200px] flex justify-center">
+                    <video
+                      src={videoPreviewUrl}
+                      controls
+                      muted
+                      loop
+                      playsInline
+                      className="max-h-[200px] w-auto object-contain"
+                    />
+                  </div>
+                )}
+
+                <input
+                  type="text"
+                  placeholder="Or paste direct 360° video URL (.mp4 / .webm)..."
+                  value={form.showroomVideoUrl || ''}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      showroomVideoUrl: e.target.value || undefined,
+                    }))
+                  }
+                  className="w-full px-3 py-1.5 text-[11px] font-mono rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#FFFBF4] dark:bg-[#1B110B]"
+                />
+              </div>
+
               {/* Per-Slot Photo Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {(
@@ -928,6 +1094,83 @@ export function ProductEditorModal({
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Optional 45° Diagonal Angles for 8-Angle Ultra-Smooth Photo Turntable */}
+              <div className="pt-3 border-t border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.18] space-y-2.5">
+                <div>
+                  <p className="text-xs font-semibold text-[#2A1810] dark:text-[#F7EFE2]">
+                    Optional 45° Diagonal Angles (8-Angle Smooth Turnaround)
+                  </p>
+                  <p className="text-[11px] text-[#7D5B3F] dark:text-[#B99A74]">
+                    Add diagonal real-human photos to double rotation smoothness without needing video.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {(
+                    [
+                      { slot: 'frontRight' as const, label: 'Front-Right (45°)' },
+                      { slot: 'backRight' as const, label: 'Back-Right (135°)' },
+                      { slot: 'backLeft' as const, label: 'Back-Left (225°)' },
+                      { slot: 'frontLeft' as const, label: 'Front-Left (315°)' },
+                    ] as const
+                  ).map(({ slot, label }) => {
+                    const val = form.showroomViews[slot] || '';
+                    return (
+                      <div
+                        key={slot}
+                        className="p-2 rounded-xl border border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.2] bg-[#FFFBF4] dark:bg-[#22150D] space-y-1.5"
+                      >
+                        <p className="text-[10px] font-medium truncate">{label}</p>
+                        <div className="aspect-[3/4] rounded-md overflow-hidden bg-[#F3E7D3] dark:bg-[#2B1B11] flex items-center justify-center">
+                          {val ? (
+                            <ResilientImage
+                              src={val}
+                              alt={label}
+                              fallbackTitle={label}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-[10px] text-[#8E6C4D]">Optional</span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between gap-1">
+                          <label className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-[#C6922E]/40 text-[10px] font-medium hover:bg-[#C6922E]/12 cursor-pointer">
+                            <Upload className="w-2.5 h-2.5 text-[#B45309] dark:text-[#E5B54F]" />
+                            <span>{val ? 'Replace' : 'Add'}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              disabled={uploadingPhoto}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                void handleUploadSingleSlot(slot, e.target.files?.[0]);
+                                e.target.value = '';
+                              }}
+                              className="sr-only"
+                            />
+                          </label>
+                          {val && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setForm((prev) => ({
+                                  ...prev,
+                                  showroomViews: {
+                                    ...prev.showroomViews,
+                                    [slot]: undefined,
+                                  },
+                                }))
+                              }
+                              className="text-[10px] text-[#9A4A0A] dark:text-[#E5B54F] underline cursor-pointer"
+                            >
+                              Clear
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Studio Presets */}
