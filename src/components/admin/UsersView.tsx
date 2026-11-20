@@ -136,36 +136,36 @@ export function UsersView({
   return (
     <div className="space-y-5">
       {/* Role Summary Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-black/[0.08] dark:bg-white/[0.1] border border-black/[0.08] dark:border-white/[0.1] rounded-xl overflow-hidden">
-        <div className="bg-white dark:bg-[#141312] p-4">
-          <p className="text-xs text-[#6D665E] dark:text-[#9E978F]">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[#C6922E]/25 dark:bg-[#D4A243]/[0.2] border border-[#C6922E]/25 dark:border-[#D4A243]/[0.2] rounded-xl overflow-hidden">
+        <div className="bg-[#FFFBF4] dark:bg-[#1B110B] p-4">
+          <p className="text-xs text-[#7D5B3F] dark:text-[#B99A74]">
             Total Accounts
           </p>
-          <p className="text-2xl font-semibold font-mono tabular-nums mt-1">
+          <p className="text-2xl font-semibold font-mono tabular-nums mt-1 text-[#2A1810] dark:text-[#F7EFE2]">
             {roleCounts.total}
           </p>
         </div>
-        <div className="bg-white dark:bg-[#141312] p-4">
-          <p className="text-xs text-[#6D665E] dark:text-[#9E978F]">
+        <div className="bg-[#FFFBF4] dark:bg-[#1B110B] p-4">
+          <p className="text-xs text-[#7D5B3F] dark:text-[#B99A74]">
             Administrators
           </p>
-          <p className="text-2xl font-semibold font-mono tabular-nums mt-1">
+          <p className="text-2xl font-semibold font-mono tabular-nums mt-1 text-[#9A4A0A] dark:text-[#E5B54F]">
             {roleCounts.admins}
           </p>
         </div>
-        <div className="bg-white dark:bg-[#141312] p-4">
-          <p className="text-xs text-[#6D665E] dark:text-[#9E978F]">
+        <div className="bg-[#FFFBF4] dark:bg-[#1B110B] p-4">
+          <p className="text-xs text-[#7D5B3F] dark:text-[#B99A74]">
             Store Managers
           </p>
-          <p className="text-2xl font-semibold font-mono tabular-nums mt-1">
+          <p className="text-2xl font-semibold font-mono tabular-nums mt-1 text-[#2A1810] dark:text-[#F7EFE2]">
             {roleCounts.managers}
           </p>
         </div>
-        <div className="bg-white dark:bg-[#141312] p-4">
-          <p className="text-xs text-[#6D665E] dark:text-[#9E978F]">
+        <div className="bg-[#FFFBF4] dark:bg-[#1B110B] p-4">
+          <p className="text-xs text-[#7D5B3F] dark:text-[#B99A74]">
             Customers
           </p>
-          <p className="text-2xl font-semibold font-mono tabular-nums mt-1">
+          <p className="text-2xl font-semibold font-mono tabular-nums mt-1 text-[#2A1810] dark:text-[#F7EFE2]">
             {roleCounts.customers}
           </p>
         </div>
@@ -175,17 +175,17 @@ export function UsersView({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative flex-1 min-w-[220px] max-w-sm">
-            <Search className="w-4 h-4 text-[#6D665E] dark:text-[#9E978F] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#7D5B3F] dark:text-[#B99A74] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search name, email, or tier..."
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-black/[0.12] dark:border-white/[0.14] bg-white dark:bg-[#141312] focus:outline-none focus:border-[#171615] dark:focus:border-[#F4F1EC]"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#FFFBF4] dark:bg-[#1B110B] text-[#2A1810] dark:text-[#F7EFE2] placeholder:text-[#7D5B3F]/75 dark:placeholder:text-[#A98C6D]/75 focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
             />
           </div>
 
-          <div className="inline-flex items-center p-1 rounded-lg bg-black/[0.04] dark:bg-white/[0.06]">
+          <div className="inline-flex items-center p-1 rounded-lg bg-[#3B2314]/[0.07] dark:bg-[#D4A243]/[0.1]">
             {(['all', 'admin', 'manager', 'customer'] as const).map((r) => (
               <button
                 key={r}
@@ -193,8 +193,8 @@ export function UsersView({
                 onClick={() => setRoleFilter(r)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md capitalize transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                   roleFilter === r
-                    ? 'bg-white dark:bg-[#1E1C1A] text-[#171615] dark:text-[#F4F1EC] shadow-xs'
-                    : 'text-[#6D665E] dark:text-[#9E978F] hover:text-[#171615] dark:hover:text-[#F4F1EC]'
+                    ? 'bg-[#3B2314] dark:bg-[#E0AD42] text-[#F8E2A8] dark:text-[#1B1009] shadow-xs'
+                    : 'text-[#5E402A] dark:text-[#D4BEA1] hover:text-[#2A1810] dark:hover:text-[#F7EFE2]'
                 }`}
               >
                 {r === 'all' ? 'All Roles' : `${r}s`}
@@ -206,7 +206,7 @@ export function UsersView({
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615] text-xs font-medium hover:opacity-90 whitespace-nowrap shrink-0 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#9A4A0A] via-[#B45309] to-[#C6922E] dark:from-[#D49B35] dark:to-[#E5B54F] text-[#FFFDF9] dark:text-[#1B1009] text-xs font-semibold hover:opacity-95 whitespace-nowrap shrink-0 cursor-pointer"
         >
           <UserPlus className="w-3.5 h-3.5" />
           <span>Add User</span>
@@ -214,11 +214,11 @@ export function UsersView({
       </div>
 
       {/* Users Table */}
-      <div className="rounded-xl bg-white dark:bg-[#141312] border border-black/[0.08] dark:border-white/[0.1] overflow-hidden">
+      <div className="rounded-xl bg-[#FFFBF4] dark:bg-[#1B110B] border border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.2] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-black/[0.08] dark:border-white/[0.1] bg-[#FAF9F7] dark:bg-[#191816] text-[11px] font-medium text-[#6D665E] dark:text-[#9E978F]">
+              <tr className="border-b border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.18] bg-[#F6EDE0] dark:bg-[#23160E] text-[11px] font-medium text-[#7D5B3F] dark:text-[#B99A74]">
                 <th className="py-3 px-4">User</th>
                 <th className="py-3 px-3">Role (RBAC)</th>
                 <th className="py-3 px-3">Tier</th>
@@ -228,12 +228,12 @@ export function UsersView({
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-black/[0.06] dark:divide-white/[0.08]">
+            <tbody className="divide-y divide-[#3B2314]/[0.08] dark:divide-[#D4A243]/[0.14]">
               {filteredUsers.length === 0 ? (
                 <tr>
                   <td
                     colSpan={7}
-                    className="py-10 text-center text-[#6D665E] dark:text-[#9E978F]"
+                    className="py-10 text-center text-[#7D5B3F] dark:text-[#B99A74]"
                   >
                     No user accounts match this filter.
                   </td>
@@ -257,7 +257,7 @@ export function UsersView({
                   return (
                     <tr
                       key={user.uid}
-                      className="hover:bg-black/[0.015] dark:hover:bg-white/[0.02] transition-colors"
+                      className="hover:bg-[#C6922E]/[0.05] dark:hover:bg-[#D4A243]/[0.06] transition-colors"
                     >
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3 min-w-[200px]">
@@ -266,23 +266,23 @@ export function UsersView({
                               src={user.photoURL}
                               alt={user.name}
                               referrerPolicy="no-referrer"
-                              className="w-8 h-8 rounded-full object-cover shrink-0 border border-black/[0.08] dark:border-white/[0.12]"
+                              className="w-8 h-8 rounded-full object-cover shrink-0 border border-[#C6922E]/35 dark:border-[#D4A243]/30"
                             />
                           ) : (
-                            <div className="w-8 h-8 rounded-full bg-[#EFECE6] dark:bg-[#23211E] flex items-center justify-center text-[11px] font-semibold shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-[#3B2314] dark:bg-[#E0AD42]/20 text-[#F8E2A8] dark:text-[#E5B54F] border border-[#C6922E]/35 flex items-center justify-center text-[11px] font-semibold shrink-0">
                               {user.name.slice(0, 2).toUpperCase()}
                             </div>
                           )}
                           <div className="min-w-0">
-                            <p className="font-medium text-[#171615] dark:text-[#F4F1EC] truncate">
+                            <p className="font-medium text-[#2A1810] dark:text-[#F7EFE2] truncate">
                               {user.name}
                               {isSelf && (
-                                <span className="ml-1.5 text-[11px] font-normal text-[#6D665E] dark:text-[#9E978F]">
+                                <span className="ml-1.5 text-[11px] font-normal text-[#9A4A0A] dark:text-[#E5B54F]">
                                   (You)
                                 </span>
                               )}
                             </p>
-                            <p className="text-[11px] text-[#6D665E] dark:text-[#9E978F] truncate">
+                            <p className="text-[11px] text-[#7D5B3F] dark:text-[#A98C6D] truncate">
                               {user.email}
                             </p>
                           </div>
@@ -299,7 +299,7 @@ export function UsersView({
                               role: e.target.value as UserRole,
                             })
                           }
-                          className="px-2 py-1 text-xs rounded-md border border-black/[0.12] dark:border-white/[0.15] bg-white dark:bg-[#191816] disabled:opacity-60 cursor-pointer"
+                          className="px-2 py-1 text-xs rounded-md border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] disabled:opacity-60 cursor-pointer focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
                         >
                           <option value="customer">Customer</option>
                           <option value="manager">Manager</option>
@@ -317,7 +317,7 @@ export function UsersView({
                               tier: e.target.value as UserTier,
                             })
                           }
-                          className="px-2 py-1 text-xs rounded-md border border-black/[0.12] dark:border-white/[0.15] bg-white dark:bg-[#191816] disabled:opacity-60 cursor-pointer"
+                          className="px-2 py-1 text-xs rounded-md border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] disabled:opacity-60 cursor-pointer focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
                         >
                           <option value="Studio Member">Studio Member</option>
                           <option value="VIP Member">VIP Member</option>
@@ -325,11 +325,11 @@ export function UsersView({
                         </select>
                       </td>
 
-                      <td className="py-3 px-3 text-right font-mono tabular-nums">
+                      <td className="py-3 px-3 text-right font-mono tabular-nums text-[#2A1810] dark:text-[#F7EFE2]">
                         {orderCount}
                       </td>
 
-                      <td className="py-3 px-3 text-right font-mono tabular-nums font-medium">
+                      <td className="py-3 px-3 text-right font-mono tabular-nums font-medium text-[#9A4A0A] dark:text-[#E5B54F]">
                         {formatPrice(spentUsd, currency, cadRate)}
                       </td>
 
@@ -357,7 +357,7 @@ export function UsersView({
 
                       <td className="py-3 px-4 text-right whitespace-nowrap">
                         {isSelf ? (
-                          <span className="text-[11px] text-[#6D665E] dark:text-[#9E978F]">
+                          <span className="text-[11px] text-[#7D5B3F] dark:text-[#A98C6D]">
                             Active session
                           </span>
                         ) : confirmDeleteUid === user.uid ? (
@@ -365,7 +365,7 @@ export function UsersView({
                             <button
                               type="button"
                               onClick={() => setConfirmDeleteUid(null)}
-                              className="px-2 py-1 text-[11px] rounded border border-black/[0.14] dark:border-white/[0.16] cursor-pointer"
+                              className="px-2 py-1 text-[11px] rounded border border-[#3B2314]/22 dark:border-[#D4A243]/28 cursor-pointer"
                             >
                               Cancel
                             </button>
@@ -385,7 +385,7 @@ export function UsersView({
                             type="button"
                             onClick={() => setConfirmDeleteUid(user.uid)}
                             aria-label={`Remove ${user.name}`}
-                            className="p-1.5 text-[#6D665E] dark:text-[#9E978F] hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
+                            className="p-1.5 text-[#7D5B3F] dark:text-[#B99A74] hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -409,18 +409,20 @@ export function UsersView({
         >
           <div
             onClick={() => setShowAddModal(false)}
-            className="fixed inset-0 bg-black/45 backdrop-blur-[2px]"
+            className="fixed inset-0 bg-[#1A0E07]/52 backdrop-blur-[2px]"
           />
           <form
             onSubmit={handleCreateSubmit}
-            className="relative z-10 w-full max-w-md rounded-xl bg-white dark:bg-[#141312] border border-black/[0.1] dark:border-white/[0.12] p-5 space-y-4 shadow-2xl"
+            className="relative z-10 w-full max-w-md rounded-xl bg-[#FFFBF4] dark:bg-[#1B110B] border border-[#C6922E]/30 dark:border-[#D4A243]/28 p-5 space-y-4 shadow-2xl"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Add Customer or Staff Record</h3>
+              <h3 className="text-sm font-semibold text-[#2A1810] dark:text-[#F7EFE2]">
+                Add Customer or Staff Record
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="p-1 text-[#6D665E] hover:text-[#171615] dark:hover:text-[#F4F1EC] cursor-pointer"
+                className="p-1 text-[#7D5B3F] dark:text-[#B99A74] hover:text-[#2A1810] dark:hover:text-[#F7EFE2] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -428,7 +430,9 @@ export function UsersView({
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block font-medium mb-1">Full Name *</label>
+                <label className="block font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1">
+                  Full Name *
+                </label>
                 <input
                   type="text"
                   required
@@ -436,11 +440,13 @@ export function UsersView({
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Freja Lind"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] placeholder:text-[#7D5B3F]/75 dark:placeholder:text-[#A98C6D]/75 focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
                 />
               </div>
               <div>
-                <label className="block font-medium mb-1">Email Address *</label>
+                <label className="block font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1">
+                  Email Address *
+                </label>
                 <input
                   type="email"
                   required
@@ -448,16 +454,18 @@ export function UsersView({
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="freja@jhontyhub.studio"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] placeholder:text-[#7D5B3F]/75 dark:placeholder:text-[#A98C6D]/75 focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-medium mb-1">Role</label>
+                  <label className="block font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1">
+                    Role
+                  </label>
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value as UserRole)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
                   >
                     <option value="customer">Customer</option>
                     <option value="manager">Manager</option>
@@ -465,12 +473,14 @@ export function UsersView({
                   </select>
                 </div>
                 <div>
-                  <label className="block font-medium mb-1">Tier</label>
+                  <label className="block font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1">
+                    Tier
+                  </label>
                   <select
                     value={newRole === 'customer' ? newTier : 'Staff'}
                     disabled={newRole !== 'customer'}
                     onChange={(e) => setNewTier(e.target.value as UserTier)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917] disabled:opacity-60"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] disabled:opacity-60 focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
                   >
                     <option value="Studio Member">Studio Member</option>
                     <option value="VIP Member">VIP Member</option>
@@ -484,14 +494,14 @@ export function UsersView({
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="px-3.5 py-2 text-xs font-medium rounded-lg border border-black/[0.14] dark:border-white/[0.16] cursor-pointer"
+                className="px-3.5 py-2 text-xs font-medium rounded-lg border border-[#3B2314]/22 dark:border-[#D4A243]/28 text-[#5E402A] dark:text-[#D4BEA1] hover:bg-[#3B2314]/[0.06] dark:hover:bg-[#D4A243]/[0.08] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={creating}
-                className="px-4 py-2 text-xs font-medium rounded-lg bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615] disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-[#9A4A0A] via-[#B45309] to-[#C6922E] dark:from-[#D49B35] dark:to-[#E5B54F] text-[#FFFDF9] dark:text-[#1B1009] hover:opacity-95 disabled:opacity-50 cursor-pointer"
               >
                 {creating ? 'Adding...' : 'Create Account'}
               </button>

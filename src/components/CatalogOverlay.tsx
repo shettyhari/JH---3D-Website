@@ -81,29 +81,29 @@ export function CatalogOverlay({
   const meta = SECTION_META[section];
 
   return (
-    <main className="min-h-[calc(100vh-84px)] bg-[#FAF9F7] dark:bg-[#0E0D0C] px-4 sm:px-6 lg:px-10 py-10 transition-colors duration-200">
+    <main className="min-h-[calc(100vh-84px)] bg-[#FBF6EE] dark:bg-[#120B07] px-4 sm:px-6 lg:px-10 py-10 transition-colors duration-200">
       <div className="max-w-[1280px] mx-auto">
         {/* Top bar inside collection view */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-black/[0.08] dark:border-white/[0.1]">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.2]">
           <div>
             <button
               type="button"
               onClick={onReturnShowroom}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#59534C] dark:text-[#A8A199] hover:text-[#171615] dark:hover:text-[#F4F1EC] mb-3 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#9A4A0A] dark:text-[#E5B54F] hover:text-[#7C3A08] dark:hover:text-[#F4D078] mb-3 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Interactive Showroom</span>
             </button>
-            <h1 className="font-editorial text-4xl sm:text-5xl font-medium tracking-tight text-[#171615] dark:text-[#F4F1EC] text-balance">
+            <h1 className="font-editorial text-4xl sm:text-5xl font-medium tracking-tight text-[#2A1810] dark:text-[#F7EFE2] text-balance">
               {meta.title}
             </h1>
-            <p className="text-sm text-[#59534C] dark:text-[#A8A199] mt-2 max-w-xl leading-relaxed">
+            <p className="text-sm text-[#5E402A] dark:text-[#D4BEA1] mt-2 max-w-xl leading-relaxed">
               {meta.subtitle}
             </p>
           </div>
 
           {section !== 'lookbook' && (
-            <div className="inline-flex items-center gap-1 p-1 bg-black/[0.05] dark:bg-white/[0.07] rounded-lg self-start md:self-auto">
+            <div className="inline-flex items-center gap-1 p-1 bg-[#3B2314]/[0.07] dark:bg-[#D4A243]/[0.1] border border-[#3B2314]/[0.08] dark:border-[#D4A243]/[0.18] rounded-lg self-start md:self-auto">
               {(['All', 'Tops', 'Outerwear'] as const).map((cat) => (
                 <button
                   key={cat}
@@ -111,8 +111,8 @@ export function CatalogOverlay({
                   onClick={() => setCategoryTab(cat)}
                   className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                     categoryTab === cat
-                      ? 'bg-white dark:bg-[#23211E] text-[#171615] dark:text-[#F4F1EC] shadow-sm'
-                      : 'text-[#59534C] dark:text-[#A8A199] hover:text-[#171615] dark:hover:text-[#F4F1EC]'
+                      ? 'bg-[#3B2314] dark:bg-[#E0AD42] text-[#F8E2A8] dark:text-[#1B1009] shadow-sm'
+                      : 'text-[#5E402A] dark:text-[#D4BEA1] hover:text-[#2A1810] dark:hover:text-[#F7EFE2]'
                   }`}
                 >
                   {cat}
@@ -128,18 +128,18 @@ export function CatalogOverlay({
             {products.map((product, index) => (
               <article
                 key={product.id}
-                className="group bg-white dark:bg-[#161513] rounded-xl overflow-hidden border border-black/[0.06] dark:border-white/[0.08] flex flex-col"
+                className="group bg-[#FFFBF4] dark:bg-[#1B110B] rounded-xl overflow-hidden border border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.2] flex flex-col"
               >
-                <div className="relative aspect-[16/10] bg-[#E8DFD3] dark:bg-[#1E1C1A] overflow-hidden">
+                <div className="relative aspect-[16/10] bg-[#EFE1C9] dark:bg-[#261911] overflow-hidden">
                   <ResilientImage
                     src={product.showroomImage}
                     alt={`Look 0${index + 1} — ${product.name}`}
                     fallbackTitle={product.name}
                     className="w-full h-full object-cover object-[center_22%] transition-transform duration-500 group-hover:scale-[1.03]"
                   />
-                  <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-between p-5">
-                    <div className="text-white">
-                      <p className="text-[11px] tracking-[0.14em] uppercase opacity-80">
+                  <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#24130A]/80 to-transparent flex items-end justify-between p-5">
+                    <div className="text-[#FFF8EC]">
+                      <p className="text-[11px] tracking-[0.14em] uppercase text-[#F2D184]">
                         Look 0{index + 1} · {product.category}
                       </p>
                       <h2 className="font-editorial text-2xl font-medium">
@@ -150,15 +150,15 @@ export function CatalogOverlay({
                       <button
                         type="button"
                         onClick={() => setQuickViewProductId(product.id)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-black/45 hover:bg-black/65 backdrop-blur-sm border border-white/25 text-white text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#26160C]/65 hover:bg-[#26160C]/85 backdrop-blur-sm border border-[#E5B54F]/40 text-[#FFF8EC] text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                       >
-                        <Eye className="w-3.5 h-3.5" />
+                        <Eye className="w-3.5 h-3.5 text-[#E5B54F]" />
                         <span>Quick View</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => onTryInShowroom(product.id)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white text-[#171615] text-xs font-medium hover:bg-[#FAF9F7] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-[#D4A243] to-[#E5B54F] text-[#1E1109] text-xs font-semibold hover:from-[#E0AD42] hover:to-[#EFC86A] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                       >
                         <span>Try On</span>
                       </button>
@@ -166,10 +166,10 @@ export function CatalogOverlay({
                   </div>
                 </div>
                 <div className="p-5 flex items-center justify-between gap-4">
-                  <p className="text-xs text-[#59534C] dark:text-[#A8A199] leading-relaxed">
+                  <p className="text-xs text-[#5E402A] dark:text-[#D4BEA1] leading-relaxed">
                     {product.tagline}
                   </p>
-                  <span className="text-sm font-medium tabular-nums text-[#171615] dark:text-[#F4F1EC] shrink-0">
+                  <span className="text-sm font-medium tabular-nums text-[#9A4A0A] dark:text-[#E5B54F] shrink-0">
                     {formatPrice(product.priceUsd, currency)}
                   </span>
                 </div>
@@ -183,8 +183,8 @@ export function CatalogOverlay({
               const saved = wishlistIds.includes(product.id);
               return (
                 <article key={product.id} className="group flex flex-col">
-                  {/* Uniform 3:4 neutral studio image frame */}
-                  <div className="relative aspect-[3/4] rounded-xl bg-[#F4F1EC] dark:bg-[#191816] overflow-hidden border border-black/[0.05] dark:border-white/[0.08]">
+                  {/* Uniform 3:4 warm studio image frame */}
+                  <div className="relative aspect-[3/4] rounded-xl bg-[#F3E7D3] dark:bg-[#1E130C] overflow-hidden border border-[#C6922E]/22 dark:border-[#D4A243]/22">
                     <ResilientImage
                       src={product.productImage}
                       alt={product.name}
@@ -200,11 +200,13 @@ export function CatalogOverlay({
                           ? `Remove ${product.name} from saved`
                           : `Save ${product.name}`
                       }
-                      className="absolute top-3.5 right-3.5 w-9 h-9 rounded-full bg-white/85 dark:bg-[#141312]/85 backdrop-blur-sm border border-black/[0.06] dark:border-white/[0.12] flex items-center justify-center text-[#171615] dark:text-[#F4F1EC] hover:bg-white dark:hover:bg-[#1F1D1A] transition-colors cursor-pointer"
+                      className="absolute top-3.5 right-3.5 w-9 h-9 rounded-full bg-[#FFFBF4]/90 dark:bg-[#1B110B]/90 backdrop-blur-sm border border-[#C6922E]/30 dark:border-[#D4A243]/30 flex items-center justify-center text-[#3B2314] dark:text-[#F7EFE2] hover:bg-[#FFFBF4] dark:hover:bg-[#291A11] transition-colors cursor-pointer"
                     >
                       <Heart
                         className={`w-4 h-4 ${
-                          saved ? 'fill-[#171615] dark:fill-[#F4F1EC]' : ''
+                          saved
+                            ? 'fill-[#B45309] text-[#B45309] dark:fill-[#E5B54F] dark:text-[#E5B54F]'
+                            : ''
                         }`}
                       />
                     </button>
@@ -214,14 +216,14 @@ export function CatalogOverlay({
                       <button
                         type="button"
                         onClick={() => onTryInShowroom(product.id)}
-                        className="flex-1 py-2.5 px-3 rounded-lg bg-white/95 dark:bg-[#141312]/95 backdrop-blur-sm border border-black/[0.08] dark:border-white/[0.14] text-[#171615] dark:text-[#F4F1EC] text-xs font-medium hover:bg-white dark:hover:bg-[#1E1C1A] transition-colors whitespace-nowrap cursor-pointer"
+                        className="flex-1 py-2.5 px-3 rounded-lg bg-[#FFFBF4]/95 dark:bg-[#1B110B]/95 backdrop-blur-sm border border-[#C6922E]/35 dark:border-[#D4A243]/35 text-[#2A1810] dark:text-[#F7EFE2] text-xs font-medium hover:bg-[#FFFBF4] dark:hover:bg-[#291A11] transition-colors whitespace-nowrap cursor-pointer"
                       >
                         Try in Showroom
                       </button>
                       <button
                         type="button"
                         onClick={() => onAddToBag(product.id, chosenSize)}
-                        className="py-2.5 px-3.5 rounded-lg bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] text-white dark:text-[#171615] text-xs font-medium inline-flex items-center gap-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                        className="py-2.5 px-3.5 rounded-lg bg-gradient-to-r from-[#9A4A0A] to-[#C6922E] hover:from-[#7C3A08] hover:to-[#B45309] dark:from-[#D49B35] dark:to-[#E5B54F] text-[#FFFDF9] dark:text-[#1B1009] text-xs font-semibold inline-flex items-center gap-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Add ({chosenSize})</span>
@@ -232,14 +234,14 @@ export function CatalogOverlay({
                   {/* Clean Metadata: Unboxed text with typographic separator */}
                   <div className="pt-4 flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[11px] text-[#78716A] dark:text-[#9E978F]">
+                      <p className="text-[11px] text-[#7D5B3F] dark:text-[#B99A74]">
                         {product.category} · {product.color}
                       </p>
-                      <h2 className="text-base font-medium text-[#171615] dark:text-[#F4F1EC] mt-0.5">
+                      <h2 className="text-base font-medium text-[#2A1810] dark:text-[#F7EFE2] mt-0.5">
                         {product.name}
                       </h2>
                     </div>
-                    <p className="text-[15px] font-medium tabular-nums text-[#171615] dark:text-[#F4F1EC] shrink-0">
+                    <p className="text-[15px] font-semibold tabular-nums text-[#9A4A0A] dark:text-[#E5B54F] shrink-0">
                       {formatPrice(product.priceUsd, currency)}
                     </p>
                   </div>
@@ -259,8 +261,8 @@ export function CatalogOverlay({
                           }
                           className={`w-7 h-7 rounded text-[11px] font-medium transition-colors cursor-pointer ${
                             chosenSize === s
-                              ? 'bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615]'
-                              : 'bg-black/[0.05] dark:bg-white/[0.08] text-[#45413C] dark:text-[#C4BDB4] hover:bg-black/[0.1] dark:hover:bg-white/[0.15]'
+                              ? 'bg-[#3B2314] dark:bg-[#E0AD42] text-[#F8E2A8] dark:text-[#1B1009]'
+                              : 'bg-[#3B2314]/[0.07] dark:bg-[#D4A243]/[0.12] text-[#5E402A] dark:text-[#D4BEA1] hover:bg-[#C6922E]/20 dark:hover:bg-[#D4A243]/25'
                           }`}
                         >
                           {s}
@@ -271,7 +273,7 @@ export function CatalogOverlay({
                     <button
                       type="button"
                       onClick={() => setQuickViewProductId(product.id)}
-                      className="inline-flex items-center gap-1.5 px-2.5 h-7 rounded-md border border-black/[0.1] dark:border-white/[0.14] bg-white dark:bg-[#191816] hover:bg-[#171615] dark:hover:bg-[#F4F1EC] hover:text-white dark:hover:text-[#171615] hover:border-[#171615] dark:hover:border-[#F4F1EC] text-[11px] font-medium text-[#171615] dark:text-[#F4F1EC] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-2.5 h-7 rounded-md border border-[#3B2314]/20 dark:border-[#D4A243]/30 bg-[#FFFBF4] dark:bg-[#1B110B] hover:bg-[#3B2314] dark:hover:bg-[#E0AD42] hover:text-[#F8E2A8] dark:hover:text-[#1B1009] hover:border-[#3B2314] dark:hover:border-[#E0AD42] text-[11px] font-medium text-[#3B2314] dark:text-[#F7EFE2] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5 stroke-[1.7]" />
                       <span>Quick View</span>

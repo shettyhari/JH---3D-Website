@@ -243,7 +243,7 @@ export function BagDrawer({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
             onClick={handleClose}
-            className="fixed inset-0 bg-black/38 backdrop-blur-[2px]"
+            className="fixed inset-0 bg-[#1A0E07]/48 backdrop-blur-[2px]"
           />
 
           {/* Slide-over drawer */}
@@ -252,22 +252,22 @@ export function BagDrawer({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-[430px] bg-white dark:bg-[#141312] text-[#171615] dark:text-[#F4F1EC] h-full shadow-[-24px_0_60px_-16px_rgba(0,0,0,0.32)] border-l border-transparent dark:border-white/[0.08] flex flex-col"
+            className="relative z-10 w-full max-w-[430px] bg-[#FFFBF4] dark:bg-[#1B110B] text-[#2A1810] dark:text-[#F7EFE2] h-full shadow-[-24px_0_60px_-16px_rgba(24,12,5,0.45)] border-l border-[#C6922E]/25 dark:border-[#D4A243]/25 flex flex-col"
           >
             {/* Drawer Header */}
-            <div className="px-6 py-5 border-b border-black/[0.08] dark:border-white/[0.1] flex items-center justify-between">
+            <div className="px-6 py-5 border-b border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.18] flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 {step === 'checkout' && (
                   <button
                     type="button"
                     onClick={() => setStep('bag')}
                     aria-label="Back to bag"
-                    className="p-1 -ml-1 text-[#59534C] dark:text-[#A8A199] hover:text-[#171615] dark:hover:text-[#F4F1EC] transition-colors cursor-pointer"
+                    className="p-1 -ml-1 text-[#7D5B3F] dark:text-[#A98C6D] hover:text-[#2A1810] dark:hover:text-[#F7EFE2] transition-colors cursor-pointer"
                   >
                     <ArrowLeft className="w-4 h-4" />
                   </button>
                 )}
-                <h2 className="text-lg font-medium tracking-tight text-[#171615] dark:text-[#F4F1EC]">
+                <h2 className="text-lg font-medium tracking-tight text-[#2A1810] dark:text-[#F7EFE2]">
                   {step === 'bag'
                     ? 'Your bag'
                     : step === 'checkout'
@@ -279,7 +279,7 @@ export function BagDrawer({
                 type="button"
                 onClick={handleClose}
                 aria-label="Close bag drawer"
-                className="p-1.5 -mr-1.5 text-[#59534C] dark:text-[#A8A199] hover:text-[#171615] dark:hover:text-[#F4F1EC] transition-colors cursor-pointer"
+                className="p-1.5 -mr-1.5 text-[#7D5B3F] dark:text-[#A98C6D] hover:text-[#2A1810] dark:hover:text-[#F7EFE2] transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -289,26 +289,26 @@ export function BagDrawer({
             {step === 'bag' && (
               <>
                 {/* Free Delivery Progress Strip */}
-                <div className="px-6 py-3.5 border-b border-black/[0.06] dark:border-white/[0.08] bg-[#FAF9F7] dark:bg-[#191816]">
-                  <p className="text-xs text-[#3F3B36] dark:text-[#B5AEA6] mb-2 tabular-nums">
+                <div className="px-6 py-3.5 border-b border-[#3B2314]/[0.1] dark:border-[#D4A243]/[0.16] bg-[#F6EDE0] dark:bg-[#23160E]">
+                  <p className="text-xs text-[#5E402A] dark:text-[#D4BEA1] mb-2 tabular-nums">
                     {qualifiesFreeDelivery ? (
-                      <span className="font-medium text-[#171615] dark:text-[#F4F1EC]">
+                      <span className="font-medium text-[#9A4A0A] dark:text-[#E5B54F]">
                         {member
                           ? 'Complimentary member delivery unlocked.'
                           : 'You have unlocked free standard delivery.'}
                       </span>
                     ) : (
                       <>
-                        <span className="font-semibold text-[#171615] dark:text-[#F4F1EC]">
+                        <span className="font-semibold text-[#9A4A0A] dark:text-[#E5B54F]">
                           {formatPrice(remainingForFreeUsd, currency, cadRate)}
                         </span>{' '}
                         away from free delivery.
                       </>
                     )}
                   </p>
-                  <div className="h-1 w-full bg-black/[0.08] dark:bg-white/[0.12] rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-[#3B2314]/[0.1] dark:bg-[#D4A243]/[0.16] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#171615] dark:bg-[#F4F1EC] transition-all duration-300 ease-out rounded-full"
+                      className="h-full bg-gradient-to-r from-[#9A4A0A] via-[#D97706] to-[#E5B54F] transition-all duration-300 ease-out rounded-full"
                       style={{ width: `${progressPct}%` }}
                     />
                   </div>
@@ -318,25 +318,25 @@ export function BagDrawer({
                 <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
                   {enrichedItems.length === 0 ? (
                     <div className="py-16 text-center flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-full bg-[#F4F1EC] dark:bg-[#1E1C1A] flex items-center justify-center mb-4 text-[#59534C] dark:text-[#A8A199]">
+                      <div className="w-12 h-12 rounded-full bg-[#F3E7D3] dark:bg-[#261911] border border-[#C6922E]/30 flex items-center justify-center mb-4 text-[#B45309] dark:text-[#E5B54F]">
                         <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
                       </div>
-                      <p className="text-sm font-medium text-[#171615] dark:text-[#F4F1EC]">
+                      <p className="text-sm font-medium text-[#2A1810] dark:text-[#F7EFE2]">
                         Your bag is currently empty
                       </p>
-                      <p className="text-xs text-[#6D665E] dark:text-[#9E978F] mt-1 max-w-[240px]">
+                      <p className="text-xs text-[#7D5B3F] dark:text-[#B99A74] mt-1 max-w-[240px]">
                         Explore the interactive showroom to preview silhouettes and add pieces to your bag.
                       </p>
                       <button
                         type="button"
                         onClick={handleClose}
-                        className="mt-6 px-5 py-2.5 bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615] text-xs font-medium tracking-wider uppercase rounded-md hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] transition-colors cursor-pointer"
+                        className="mt-6 px-5 py-2.5 bg-gradient-to-r from-[#9A4A0A] via-[#B45309] to-[#C6922E] dark:from-[#D49B35] dark:to-[#E5B54F] text-[#FFFDF9] dark:text-[#1B1009] text-xs font-semibold tracking-wider uppercase rounded-md hover:opacity-95 transition-opacity cursor-pointer"
                       >
                         Return to Showroom
                       </button>
                     </div>
                   ) : (
-                    <ul className="divide-y divide-black/[0.07] dark:divide-white/[0.08]">
+                    <ul className="divide-y divide-[#3B2314]/[0.1] dark:divide-[#D4A243]/[0.15]">
                       {enrichedItems.map((item) => (
                         <li
                           key={`${item.productId}-${item.size}`}
@@ -348,7 +348,7 @@ export function BagDrawer({
                               onSelectProductToTry(item.productId);
                               onClose();
                             }}
-                            className="w-[74px] h-[92px] rounded-lg bg-[#F4F1EC] dark:bg-[#1E1C1A] overflow-hidden shrink-0 border border-black/[0.05] dark:border-white/[0.08] cursor-pointer hover:opacity-90 transition-opacity"
+                            className="w-[74px] h-[92px] rounded-lg bg-[#F3E7D3] dark:bg-[#261911] overflow-hidden shrink-0 border border-[#C6922E]/22 dark:border-[#D4A243]/22 cursor-pointer hover:opacity-90 transition-opacity"
                             title={`Preview ${item.product.name} in showroom`}
                           >
                             <ResilientImage
@@ -362,14 +362,14 @@ export function BagDrawer({
                           <div className="flex-1 min-w-0 flex flex-col justify-between">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
-                                <h3 className="text-sm font-medium text-[#171615] dark:text-[#F4F1EC] truncate">
+                                <h3 className="text-sm font-medium text-[#2A1810] dark:text-[#F7EFE2] truncate">
                                   {item.product.name}
                                 </h3>
-                                <p className="text-xs text-[#6D665E] dark:text-[#9E978F] mt-0.5">
+                                <p className="text-xs text-[#7D5B3F] dark:text-[#B99A74] mt-0.5">
                                   {item.product.color} · Size {item.size}
                                 </p>
                               </div>
-                              <p className="text-sm font-medium text-[#171615] dark:text-[#F4F1EC] tabular-nums shrink-0">
+                              <p className="text-sm font-semibold text-[#9A4A0A] dark:text-[#E5B54F] tabular-nums shrink-0">
                                 {formatPrice(
                                   item.product.priceUsd * item.quantity,
                                   currency,
@@ -379,7 +379,7 @@ export function BagDrawer({
                             </div>
 
                             <div className="flex items-center justify-between mt-3">
-                              <div className="inline-flex items-center border border-black/[0.12] dark:border-white/[0.15] rounded-md">
+                              <div className="inline-flex items-center border border-[#3B2314]/20 dark:border-[#D4A243]/28 rounded-md">
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -390,11 +390,11 @@ export function BagDrawer({
                                     )
                                   }
                                   aria-label={`Decrease quantity of ${item.product.name}`}
-                                  className="w-7 h-7 flex items-center justify-center text-[#45413C] dark:text-[#B5AEA6] hover:text-[#171615] dark:hover:text-[#F4F1EC] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                                  className="w-7 h-7 flex items-center justify-center text-[#5E402A] dark:text-[#D4BEA1] hover:text-[#2A1810] dark:hover:text-[#F7EFE2] hover:bg-[#C6922E]/10 dark:hover:bg-[#D4A243]/15 transition-colors cursor-pointer"
                                 >
                                   <Minus className="w-3 h-3" />
                                 </button>
-                                <span className="w-7 text-center text-xs font-medium tabular-nums text-[#171615] dark:text-[#F4F1EC]">
+                                <span className="w-7 text-center text-xs font-medium tabular-nums text-[#2A1810] dark:text-[#F7EFE2]">
                                   {item.quantity}
                                 </span>
                                 <button
@@ -407,7 +407,7 @@ export function BagDrawer({
                                     )
                                   }
                                   aria-label={`Increase quantity of ${item.product.name}`}
-                                  className="w-7 h-7 flex items-center justify-center text-[#45413C] dark:text-[#B5AEA6] hover:text-[#171615] dark:hover:text-[#F4F1EC] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                                  className="w-7 h-7 flex items-center justify-center text-[#5E402A] dark:text-[#D4BEA1] hover:text-[#2A1810] dark:hover:text-[#F7EFE2] hover:bg-[#C6922E]/10 dark:hover:bg-[#D4A243]/15 transition-colors cursor-pointer"
                                 >
                                   <Plus className="w-3 h-3" />
                                 </button>
@@ -418,7 +418,7 @@ export function BagDrawer({
                                 onClick={() =>
                                   onRemoveItem(item.productId, item.size)
                                 }
-                                className="text-[11px] text-[#78716A] dark:text-[#9E978F] hover:text-[#171615] dark:hover:text-[#F4F1EC] underline underline-offset-4 transition-colors cursor-pointer"
+                                className="text-[11px] text-[#7D5B3F] dark:text-[#A98C6D] hover:text-[#9A4A0A] dark:hover:text-[#E5B54F] underline underline-offset-4 transition-colors cursor-pointer"
                               >
                                 Remove
                               </button>
@@ -431,9 +431,9 @@ export function BagDrawer({
 
                   {/* "Pair it with" Cross-Sell Section */}
                   {currentPairProduct && (
-                    <div className="pt-5 border-t border-black/[0.08] dark:border-white/[0.1]">
+                    <div className="pt-5 border-t border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.18]">
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-xs font-medium text-[#171615] dark:text-[#F4F1EC] tracking-wide">
+                        <h3 className="text-xs font-medium text-[#2A1810] dark:text-[#F7EFE2] tracking-wide">
                           Pair it with
                         </h3>
                         {pairingCandidates.length > 1 && (
@@ -445,7 +445,7 @@ export function BagDrawer({
                               )
                             }
                             aria-label="Next pairing suggestion"
-                            className="inline-flex items-center gap-0.5 text-[11px] text-[#6D665E] dark:text-[#9E978F] hover:text-[#171615] dark:hover:text-[#F4F1EC] transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-0.5 text-[11px] text-[#9A4A0A] dark:text-[#E5B54F] hover:text-[#7C3A08] dark:hover:text-[#F4D078] transition-colors cursor-pointer"
                           >
                             <span>Next</span>
                             <ChevronRight className="w-3.5 h-3.5" />
@@ -453,14 +453,14 @@ export function BagDrawer({
                         )}
                       </div>
 
-                      <div className="flex gap-3.5 p-3 rounded-xl bg-[#FAF9F7] dark:bg-[#191816] border border-black/[0.06] dark:border-white/[0.08]">
+                      <div className="flex gap-3.5 p-3 rounded-xl bg-[#F6EDE0] dark:bg-[#23160E] border border-[#C6922E]/22 dark:border-[#D4A243]/22">
                         <button
                           type="button"
                           onClick={() => {
                             onSelectProductToTry(currentPairProduct.id);
                             onClose();
                           }}
-                          className="w-[68px] h-[84px] rounded-lg bg-[#F4F1EC] dark:bg-[#22201D] overflow-hidden shrink-0 cursor-pointer"
+                          className="w-[68px] h-[84px] rounded-lg bg-[#EFE1C9] dark:bg-[#2D1D13] overflow-hidden shrink-0 cursor-pointer"
                           title={`Try on ${currentPairProduct.name}`}
                         >
                           <ResilientImage
@@ -473,17 +473,17 @@ export function BagDrawer({
 
                         <div className="flex-1 min-w-0 flex flex-col justify-between">
                           <div>
-                            <h4 className="text-xs font-medium text-[#171615] dark:text-[#F4F1EC] truncate">
+                            <h4 className="text-xs font-medium text-[#2A1810] dark:text-[#F7EFE2] truncate">
                               {currentPairProduct.name}
                             </h4>
-                            <p className="text-[11px] text-[#6D665E] dark:text-[#9E978F] mt-0.5">
+                            <p className="text-[11px] text-[#7D5B3F] dark:text-[#B99A74] mt-0.5">
                               {currentPairProduct.color}
                             </p>
                           </div>
 
                           <div className="flex items-center justify-between gap-2 mt-2.5">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-medium tabular-nums text-[#171615] dark:text-[#F4F1EC]">
+                              <span className="text-xs font-semibold tabular-nums text-[#9A4A0A] dark:text-[#E5B54F]">
                                 {formatPrice(
                                   currentPairProduct.priceUsd,
                                   currency,
@@ -496,7 +496,7 @@ export function BagDrawer({
                                 onChange={(e) =>
                                   setPairSize(e.target.value as Size)
                                 }
-                                className="text-[11px] bg-white dark:bg-[#141312] border border-black/[0.12] dark:border-white/[0.16] rounded px-1.5 py-1 text-[#171615] dark:text-[#F4F1EC] cursor-pointer"
+                                className="text-[11px] bg-[#FFFBF4] dark:bg-[#1B110B] border border-[#7D5B3F]/30 dark:border-[#D4A243]/30 rounded px-1.5 py-1 text-[#2A1810] dark:text-[#F7EFE2] cursor-pointer"
                               >
                                 {SIZES.map((s) => (
                                   <option key={s} value={s}>
@@ -511,7 +511,7 @@ export function BagDrawer({
                               onClick={() =>
                                 onAddItem(currentPairProduct.id, pairSize)
                               }
-                              className="px-3 py-1.5 bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] text-white dark:text-[#171615] text-[10px] font-medium tracking-[0.1em] uppercase rounded transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                              className="px-3 py-1.5 bg-[#3B2314] dark:bg-[#E0AD42] hover:bg-[#52311C] dark:hover:bg-[#EBC05E] text-[#F8E2A8] dark:text-[#1B1009] text-[10px] font-medium tracking-[0.1em] uppercase rounded transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                             >
                               ADD TO CART
                             </button>
@@ -524,28 +524,28 @@ export function BagDrawer({
 
                 {/* Drawer Footer Summary */}
                 {enrichedItems.length > 0 && (
-                  <div className="px-6 py-5 border-t border-black/[0.08] dark:border-white/[0.1] bg-white dark:bg-[#141312] space-y-3.5">
+                  <div className="px-6 py-5 border-t border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.18] bg-[#FFFBF4] dark:bg-[#1B110B] space-y-3.5">
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs text-[#6D665E] dark:text-[#9E978F]">
+                      <div className="flex items-center justify-between text-xs text-[#7D5B3F] dark:text-[#B99A74]">
                         <span>Estimated Delivery</span>
-                        <span className="tabular-nums font-medium text-[#171615] dark:text-[#F4F1EC]">
+                        <span className="tabular-nums font-medium text-[#2A1810] dark:text-[#F7EFE2]">
                           {shippingUsd === 0
                             ? 'Complimentary'
                             : formatPrice(shippingUsd, currency, cadRate)}
                         </span>
                       </div>
                       <div className="flex items-baseline justify-between pt-1">
-                        <span className="text-sm font-medium text-[#171615] dark:text-[#F4F1EC]">
+                        <span className="text-sm font-medium text-[#2A1810] dark:text-[#F7EFE2]">
                           Estimated total
                         </span>
-                        <span className="text-base font-semibold tabular-nums text-[#171615] dark:text-[#F4F1EC]">
+                        <span className="text-base font-semibold tabular-nums text-[#9A4A0A] dark:text-[#E5B54F]">
                           {formatPrice(subtotalUsd + shippingUsd, currency, cadRate)}{' '}
-                          <span className="text-xs font-normal text-[#6D665E] dark:text-[#9E978F]">
+                          <span className="text-xs font-normal text-[#7D5B3F] dark:text-[#A98C6D]">
                             {CURRENCIES[currency].shortLabel}
                           </span>
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#78716A] dark:text-[#9E978F]">
+                      <p className="text-[11px] text-[#7D5B3F] dark:text-[#A98C6D]">
                         Taxes, discounts and shipping calculated at checkout.
                       </p>
                     </div>
@@ -559,7 +559,7 @@ export function BagDrawer({
                         }
                         setStep('checkout');
                       }}
-                      className="w-full py-3.5 bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] active:scale-[0.99] text-white dark:text-[#171615] text-xs font-medium tracking-[0.16em] uppercase rounded-md transition-all cursor-pointer"
+                      className="w-full py-3.5 bg-gradient-to-r from-[#9A4A0A] via-[#B45309] to-[#C6922E] hover:from-[#7C3A08] hover:to-[#B45309] dark:from-[#D49B35] dark:via-[#E0AD42] dark:to-[#ECC25C] active:scale-[0.99] text-[#FFFDF9] dark:text-[#1B1009] text-xs font-semibold tracking-[0.16em] uppercase rounded-md transition-all cursor-pointer"
                     >
                       CHECK OUT
                     </button>
@@ -575,15 +575,15 @@ export function BagDrawer({
                 className="flex-1 flex flex-col overflow-hidden"
               >
                 <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-                  <div className="p-4 rounded-xl bg-[#FAF9F7] dark:bg-[#191816] border border-black/[0.06] dark:border-white/[0.08] space-y-2">
-                    <p className="text-xs font-medium text-[#171615] dark:text-[#F4F1EC]">
+                  <div className="p-4 rounded-xl bg-[#F6EDE0] dark:bg-[#23160E] border border-[#C6922E]/22 dark:border-[#D4A243]/22 space-y-2">
+                    <p className="text-xs font-medium text-[#2A1810] dark:text-[#F7EFE2]">
                       Order summary ({enrichedItems.reduce((a, b) => a + b.quantity, 0)}{' '}
                       {enrichedItems.reduce((a, b) => a + b.quantity, 0) === 1
                         ? 'piece'
                         : 'pieces'}
                       )
                     </p>
-                    <div className="space-y-1 text-xs text-[#59534C] dark:text-[#A8A199]">
+                    <div className="space-y-1 text-xs text-[#5E402A] dark:text-[#D4BEA1]">
                       {enrichedItems.map((i) => (
                         <div
                           key={`${i.productId}-${i.size}`}
@@ -592,7 +592,7 @@ export function BagDrawer({
                           <span className="truncate">
                             {i.quantity} × {i.product.name} ({i.size})
                           </span>
-                          <span className="tabular-nums shrink-0 text-[#171615] dark:text-[#F4F1EC]">
+                          <span className="tabular-nums shrink-0 text-[#9A4A0A] dark:text-[#E5B54F] font-medium">
                             {formatPrice(i.product.priceUsd * i.quantity, currency, cadRate)}
                           </span>
                         </div>
@@ -604,7 +604,7 @@ export function BagDrawer({
                     <div>
                       <label
                         htmlFor="checkout-email"
-                        className="block text-xs font-medium text-[#3F3B36] dark:text-[#D4CEC7] mb-1.5"
+                        className="block text-xs font-medium text-[#4E3320] dark:text-[#E2CCA9] mb-1.5"
                       >
                         Email address
                       </label>
@@ -615,14 +615,14 @@ export function BagDrawer({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="alex@domain.com"
-                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-black/[0.15] dark:border-white/[0.16] focus:outline-none focus:border-[#171615] dark:focus:border-[#F4F1EC] bg-white dark:bg-[#1C1A18] text-[#171615] dark:text-[#F4F1EC] placeholder:text-[#8E877F] dark:placeholder:text-[#78716A]"
+                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F] bg-[#FFFBF4] dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] placeholder:text-[#9C7D5E] dark:placeholder:text-[#8A6E52]"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="checkout-name"
-                        className="block text-xs font-medium text-[#3F3B36] dark:text-[#D4CEC7] mb-1.5"
+                        className="block text-xs font-medium text-[#4E3320] dark:text-[#E2CCA9] mb-1.5"
                       >
                         Full name
                       </label>
@@ -633,14 +633,14 @@ export function BagDrawer({
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="Alex Lindqvist"
-                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-black/[0.15] dark:border-white/[0.16] focus:outline-none focus:border-[#171615] dark:focus:border-[#F4F1EC] bg-white dark:bg-[#1C1A18] text-[#171615] dark:text-[#F4F1EC] placeholder:text-[#8E877F] dark:placeholder:text-[#78716A]"
+                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F] bg-[#FFFBF4] dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] placeholder:text-[#9C7D5E] dark:placeholder:text-[#8A6E52]"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="checkout-address"
-                        className="block text-xs font-medium text-[#3F3B36] dark:text-[#D4CEC7] mb-1.5"
+                        className="block text-xs font-medium text-[#4E3320] dark:text-[#E2CCA9] mb-1.5"
                       >
                         Shipping address
                       </label>
@@ -651,14 +651,14 @@ export function BagDrawer({
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         placeholder="142 Mercer Street, Apt 4B"
-                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-black/[0.15] dark:border-white/[0.16] focus:outline-none focus:border-[#171615] dark:focus:border-[#F4F1EC] bg-white dark:bg-[#1C1A18] text-[#171615] dark:text-[#F4F1EC] placeholder:text-[#8E877F] dark:placeholder:text-[#78716A]"
+                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F] bg-[#FFFBF4] dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] placeholder:text-[#9C7D5E] dark:placeholder:text-[#8A6E52]"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="checkout-city"
-                        className="block text-xs font-medium text-[#3F3B36] dark:text-[#D4CEC7] mb-1.5"
+                        className="block text-xs font-medium text-[#4E3320] dark:text-[#E2CCA9] mb-1.5"
                       >
                         City & Postal Code
                       </label>
@@ -668,17 +668,17 @@ export function BagDrawer({
                         required
                         value={cityPostal}
                         onChange={(e) => setCityPostal(e.target.value)}
-                        placeholder="New York, NY 10012"
-                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-black/[0.15] dark:border-white/[0.16] focus:outline-none focus:border-[#171615] dark:focus:border-[#F4F1EC] bg-white dark:bg-[#1C1A18] text-[#171615] dark:text-[#F4F1EC] placeholder:text-[#8E877F] dark:placeholder:text-[#78716A]"
+                        placeholder="Mumbai, MH 400001"
+                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F] bg-[#FFFBF4] dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] placeholder:text-[#9C7D5E] dark:placeholder:text-[#8A6E52]"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="px-6 py-5 border-t border-black/[0.08] dark:border-white/[0.1] bg-white dark:bg-[#141312] space-y-3">
-                  <div className="flex justify-between text-sm font-medium text-[#171615] dark:text-[#F4F1EC]">
+                <div className="px-6 py-5 border-t border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.18] bg-[#FFFBF4] dark:bg-[#1B110B] space-y-3">
+                  <div className="flex justify-between text-sm font-medium text-[#2A1810] dark:text-[#F7EFE2]">
                     <span>Total due</span>
-                    <span className="tabular-nums">
+                    <span className="tabular-nums text-[#9A4A0A] dark:text-[#E5B54F] font-semibold">
                       {formatPrice(subtotalUsd + shippingUsd, currency, cadRate)}{' '}
                       {CURRENCIES[currency].shortLabel}
                     </span>
@@ -686,7 +686,7 @@ export function BagDrawer({
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full py-3.5 bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] text-white dark:text-[#171615] text-xs font-medium tracking-[0.16em] uppercase rounded-md transition-colors disabled:opacity-50 cursor-pointer"
+                    className="w-full py-3.5 bg-gradient-to-r from-[#9A4A0A] via-[#B45309] to-[#C6922E] hover:from-[#7C3A08] hover:to-[#B45309] dark:from-[#D49B35] dark:via-[#E0AD42] dark:to-[#ECC25C] text-[#FFFDF9] dark:text-[#1B1009] text-xs font-semibold tracking-[0.16em] uppercase rounded-md transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {submitting ? 'PROCESSING ORDER...' : 'COMPLETE ORDER'}
                   </button>
@@ -699,46 +699,46 @@ export function BagDrawer({
               <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col justify-between">
                 <div className="space-y-6">
                   <div className="flex flex-col items-center text-center">
-                    <CheckCircle2 className="w-10 h-10 text-[#171615] dark:text-[#F4F1EC] stroke-[1.5] mb-3" />
-                    <p className="text-xs tracking-[0.14em] uppercase text-[#6D665E] dark:text-[#9E978F]">
+                    <CheckCircle2 className="w-10 h-10 text-[#B45309] dark:text-[#E5B54F] stroke-[1.5] mb-3" />
+                    <p className="text-xs tracking-[0.14em] uppercase text-[#9A4A0A] dark:text-[#E5B54F] font-medium">
                       Order #{receipt.orderNumber} Confirmed
                     </p>
-                    <h3 className="font-editorial text-3xl font-medium text-[#171615] dark:text-[#F4F1EC] mt-1">
+                    <h3 className="font-editorial text-3xl font-medium text-[#2A1810] dark:text-[#F7EFE2] mt-1">
                       Preparing Shipment
                     </h3>
-                    <p className="text-xs text-[#59534C] dark:text-[#A8A199] mt-2 max-w-[300px] leading-relaxed">
+                    <p className="text-xs text-[#5E402A] dark:text-[#D4BEA1] mt-2 max-w-[300px] leading-relaxed">
                       A confirmation receipt has been prepared for{' '}
-                      <span className="font-medium text-[#171615] dark:text-[#F4F1EC]">
+                      <span className="font-medium text-[#2A1810] dark:text-[#F7EFE2]">
                         {receipt.email}
                       </span>
                       .
                     </p>
                   </div>
 
-                  <div className="rounded-xl bg-[#FAF9F7] dark:bg-[#191816] border border-black/[0.07] dark:border-white/[0.08] p-4 space-y-3 text-xs">
+                  <div className="rounded-xl bg-[#F6EDE0] dark:bg-[#23160E] border border-[#C6922E]/25 dark:border-[#D4A243]/22 p-4 space-y-3 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-[#6D665E] dark:text-[#9E978F]">
+                      <span className="text-[#7D5B3F] dark:text-[#B99A74]">
                         Recipient
                       </span>
-                      <span className="font-medium text-[#171615] dark:text-[#F4F1EC]">
+                      <span className="font-medium text-[#2A1810] dark:text-[#F7EFE2]">
                         {receipt.shippingName}
                       </span>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <span className="text-[#6D665E] dark:text-[#9E978F] shrink-0">
+                      <span className="text-[#7D5B3F] dark:text-[#B99A74] shrink-0">
                         Destination
                       </span>
-                      <span className="text-right text-[#171615] dark:text-[#F4F1EC]">
+                      <span className="text-right text-[#2A1810] dark:text-[#F7EFE2]">
                         {receipt.shippingAddress}
                       </span>
                     </div>
-                    <div className="border-t border-black/[0.07] dark:border-white/[0.08] pt-3 space-y-1.5">
+                    <div className="border-t border-[#3B2314]/[0.1] dark:border-[#D4A243]/[0.16] pt-3 space-y-1.5">
                       {receipt.items.map((item, i) => (
                         <div key={i} className="flex justify-between">
-                          <span className="text-[#45413C] dark:text-[#B5AEA6]">
+                          <span className="text-[#5E402A] dark:text-[#D4BEA1]">
                             {item.quantity} × {item.name} ({item.size})
                           </span>
-                          <span className="tabular-nums font-medium text-[#171615] dark:text-[#F4F1EC]">
+                          <span className="tabular-nums font-medium text-[#2A1810] dark:text-[#F7EFE2]">
                             {formatPrice(
                               item.unitPriceUsd * item.quantity,
                               receipt.currency,
@@ -747,7 +747,7 @@ export function BagDrawer({
                         </div>
                       ))}
                     </div>
-                    <div className="border-t border-black/[0.07] dark:border-white/[0.08] pt-3 flex justify-between font-semibold text-[#171615] dark:text-[#F4F1EC]">
+                    <div className="border-t border-[#3B2314]/[0.1] dark:border-[#D4A243]/[0.16] pt-3 flex justify-between font-semibold text-[#9A4A0A] dark:text-[#E5B54F]">
                       <span>Total Paid</span>
                       <span className="tabular-nums">
                         {formatPrice(
@@ -763,7 +763,7 @@ export function BagDrawer({
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="mt-8 w-full py-3.5 bg-[#171615] dark:bg-[#F4F1EC] hover:bg-[#2C2A27] dark:hover:bg-[#E4DFD8] text-white dark:text-[#171615] text-xs font-medium tracking-[0.16em] uppercase rounded-md transition-colors cursor-pointer"
+                  className="mt-8 w-full py-3.5 bg-gradient-to-r from-[#9A4A0A] via-[#B45309] to-[#C6922E] dark:from-[#D49B35] dark:to-[#E5B54F] text-[#FFFDF9] dark:text-[#1B1009] text-xs font-semibold tracking-[0.16em] uppercase rounded-md transition-colors cursor-pointer"
                 >
                   CONTINUE TO SHOWROOM
                 </button>

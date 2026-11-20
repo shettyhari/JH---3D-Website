@@ -62,6 +62,9 @@ export function getLowStockSizes(product: Product): Size[] {
   return SIZES.filter((sz) => (product.stock?.[sz] ?? 0) <= threshold);
 }
 
+export const SHOWROOM_BACKDROP_IMAGE =
+  '/src/assets/images/showroom_empty_stage_1795189534472.jpg';
+
 export const PRESET_GALLERY_ASSETS = [
   {
     label: 'Ringer Tee Studio Set',
@@ -77,50 +80,50 @@ export const PRESET_GALLERY_ASSETS = [
     label: 'Linen Shirt Studio Set',
     productImage: '/src/assets/images/garment_linen_shirt_1795163913327.jpg',
     showroomViews: {
-      front: '/src/assets/images/jh_linen_front_1795173047315.jpg',
-      right: '/src/assets/images/jh_linen_right_1795173048066.jpg',
-      back: '/src/assets/images/jh_linen_back_1795173048092.jpg',
-      left: '/src/assets/images/jh_linen_left_1795173048223.jpg',
+      front: '/src/assets/images/linen_stage_front_1795189536270.jpg',
+      right: '/src/assets/images/jh_stage_linen_right.jpg',
+      back: '/src/assets/images/jh_stage_linen_back.jpg',
+      left: '/src/assets/images/jh_stage_linen_left.jpg',
     },
   },
   {
     label: 'Loop Hoodie Studio Set',
     productImage: '/src/assets/images/garment_loop_hoodie_1795163913762.jpg',
     showroomViews: {
-      front: '/src/assets/images/jh_hoodie_front_1795173047250.jpg',
-      right: '/src/assets/images/jh_hoodie_right_1795173048191.jpg',
-      back: '/src/assets/images/jh_hoodie_back_1795173047811.jpg',
-      left: '/src/assets/images/jh_hoodie_left_1795173048658.jpg',
+      front: '/src/assets/images/jh_stage_v4_hoodie_front.jpg',
+      right: '/src/assets/images/jh_stage_v4_hoodie_right.jpg',
+      back: '/src/assets/images/jh_stage_v4_hoodie_back.jpg',
+      left: '/src/assets/images/jh_stage_v4_hoodie_left.jpg',
     },
   },
   {
     label: 'Breton Long Sleeve Studio Set',
     productImage: '/src/assets/images/garment_breton_stripe_1795163913613.jpg',
     showroomViews: {
-      front: '/src/assets/images/jh_breton_front_1795173166048.jpg',
-      right: '/src/assets/images/jh_breton_right_1795173200001.jpg',
-      back: '/src/assets/images/jh_breton_back_1795173168034.jpg',
-      left: '/src/assets/images/jh_breton_left_1795173200002.jpg',
+      front: '/src/assets/images/jh_stage_v6_breton_front.jpg',
+      right: '/src/assets/images/breton_stage_right_1795189539978.jpg',
+      back: '/src/assets/images/breton_stage_back_1795189536212.jpg',
+      left: '/src/assets/images/breton_stage_left_1795189536621.jpg',
     },
   },
   {
     label: 'Canvas Chore Jacket Studio Set',
     productImage: '/src/assets/images/garment_chore_jacket_1795163914249.jpg',
     showroomViews: {
-      front: '/src/assets/images/jh_chore_front_1795173166215.jpg',
-      right: '/src/assets/images/jh_chore_right_1795173200005.jpg',
-      back: '/src/assets/images/jh_chore_back_1795173200006.jpg',
-      left: '/src/assets/images/jh_chore_left_1795173200007.jpg',
+      front: '/src/assets/images/jh_stage_chore_front.jpg',
+      right: '/src/assets/images/jh_stage_chore_right.jpg',
+      back: '/src/assets/images/jh_stage_chore_back.jpg',
+      left: '/src/assets/images/jh_stage_chore_left.jpg',
     },
   },
   {
     label: 'Nylon Bomber Studio Set',
     productImage: '/src/assets/images/garment_nylon_bomber_1795163913724.jpg',
     showroomViews: {
-      front: '/src/assets/images/jh_bomber_front_1795173165416.jpg',
-      right: '/src/assets/images/jh_bomber_right_1795173200003.jpg',
-      back: '/src/assets/images/jh_bomber_back_1795173200004.jpg',
-      left: '/src/assets/images/jh_bomber_left_1795173168438.jpg',
+      front: '/src/assets/images/jh_stage_bomber_front.jpg',
+      right: '/src/assets/images/jh_stage_bomber_right.jpg',
+      back: '/src/assets/images/jh_stage_bomber_back.jpg',
+      left: '/src/assets/images/jh_stage_bomber_left.jpg',
     },
   },
 ];
@@ -197,12 +200,12 @@ export const PRODUCTS: Product[] = [
     description:
       'Tailored from long-staple European flax with natural thermoregulating weave. Features mother-of-pearl buttons, single chest pocket, and a gently curved hem designed to wear untucked.',
     status: 'active',
-    showroomImage: '/src/assets/images/jh_linen_front_1795173047315.jpg',
+    showroomImage: '/src/assets/images/linen_stage_front_1795189536270.jpg',
     showroomViews: {
-      front: '/src/assets/images/jh_linen_front_1795173047315.jpg',
-      right: '/src/assets/images/jh_linen_right_1795173048066.jpg',
-      back: '/src/assets/images/jh_linen_back_1795173048092.jpg',
-      left: '/src/assets/images/jh_linen_left_1795173048223.jpg',
+      front: '/src/assets/images/linen_stage_front_1795189536270.jpg',
+      right: '/src/assets/images/jh_stage_linen_right.jpg',
+      back: '/src/assets/images/jh_stage_linen_back.jpg',
+      left: '/src/assets/images/jh_stage_linen_left.jpg',
     },
     productImage: '/src/assets/images/garment_linen_shirt_1795163913327.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
@@ -256,12 +259,12 @@ export const PRODUCTS: Product[] = [
     description:
       'Engineered with a double-layered self-standing hood, brushed metal aglets, and side rib gussets for clean architectural drape without bulk.',
     status: 'active',
-    showroomImage: '/src/assets/images/jh_hoodie_front_1795173047250.jpg',
+    showroomImage: '/src/assets/images/jh_stage_v4_hoodie_front.jpg',
     showroomViews: {
-      front: '/src/assets/images/jh_hoodie_front_1795173047250.jpg',
-      right: '/src/assets/images/jh_hoodie_right_1795173048191.jpg',
-      back: '/src/assets/images/jh_hoodie_back_1795173047811.jpg',
-      left: '/src/assets/images/jh_hoodie_left_1795173048658.jpg',
+      front: '/src/assets/images/jh_stage_v4_hoodie_front.jpg',
+      right: '/src/assets/images/jh_stage_v4_hoodie_right.jpg',
+      back: '/src/assets/images/jh_stage_v4_hoodie_back.jpg',
+      left: '/src/assets/images/jh_stage_v4_hoodie_left.jpg',
     },
     productImage: '/src/assets/images/garment_loop_hoodie_1795163913762.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
@@ -315,12 +318,12 @@ export const PRODUCTS: Product[] = [
     description:
       'Inspired by archival coastal workwear and refined for modern layering. Yarn-dyed stripes ensure crisp definition and zero fade over years of wear.',
     status: 'active',
-    showroomImage: '/src/assets/images/jh_breton_front_1795173166048.jpg',
+    showroomImage: '/src/assets/images/jh_stage_v6_breton_front.jpg',
     showroomViews: {
-      front: '/src/assets/images/jh_breton_front_1795173166048.jpg',
-      right: '/src/assets/images/jh_breton_right_1795173200001.jpg',
-      back: '/src/assets/images/jh_breton_back_1795173168034.jpg',
-      left: '/src/assets/images/jh_breton_left_1795173200002.jpg',
+      front: '/src/assets/images/jh_stage_v6_breton_front.jpg',
+      right: '/src/assets/images/breton_stage_right_1795189539978.jpg',
+      back: '/src/assets/images/breton_stage_back_1795189536212.jpg',
+      left: '/src/assets/images/breton_stage_left_1795189536621.jpg',
     },
     productImage: '/src/assets/images/garment_breton_stripe_1795163913613.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
@@ -374,12 +377,12 @@ export const PRODUCTS: Product[] = [
     description:
       'Our signature transitional layer. Built from tightly woven organic cotton duck canvas that breaks in gracefully to the wearer. Detailed with four reinforced patch pockets and an interior chest pocket.',
     status: 'active',
-    showroomImage: '/src/assets/images/jh_chore_front_1795173166215.jpg',
+    showroomImage: '/src/assets/images/jh_stage_chore_front.jpg',
     showroomViews: {
-      front: '/src/assets/images/jh_chore_front_1795173166215.jpg',
-      right: '/src/assets/images/jh_chore_right_1795173200005.jpg',
-      back: '/src/assets/images/jh_chore_back_1795173200006.jpg',
-      left: '/src/assets/images/jh_chore_left_1795173200007.jpg',
+      front: '/src/assets/images/jh_stage_chore_front.jpg',
+      right: '/src/assets/images/jh_stage_chore_right.jpg',
+      back: '/src/assets/images/jh_stage_chore_back.jpg',
+      left: '/src/assets/images/jh_stage_chore_left.jpg',
     },
     productImage: '/src/assets/images/garment_chore_jacket_1795163914249.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
@@ -433,12 +436,12 @@ export const PRODUCTS: Product[] = [
     description:
       'Precision-cut flight silhouette crafted from tightly woven matte Italian nylon with light recycled insulation. Equipped with a brushed gunmetal two-way zipper, snap welt pockets, and fine-gauge rib knit trims.',
     status: 'active',
-    showroomImage: '/src/assets/images/jh_bomber_front_1795173165416.jpg',
+    showroomImage: '/src/assets/images/jh_stage_bomber_front.jpg',
     showroomViews: {
-      front: '/src/assets/images/jh_bomber_front_1795173165416.jpg',
-      right: '/src/assets/images/jh_bomber_right_1795173200003.jpg',
-      back: '/src/assets/images/jh_bomber_back_1795173200004.jpg',
-      left: '/src/assets/images/jh_bomber_left_1795173168438.jpg',
+      front: '/src/assets/images/jh_stage_bomber_front.jpg',
+      right: '/src/assets/images/jh_stage_bomber_right.jpg',
+      back: '/src/assets/images/jh_stage_bomber_back.jpg',
+      left: '/src/assets/images/jh_stage_bomber_left.jpg',
     },
     productImage: '/src/assets/images/garment_nylon_bomber_1795163913724.jpg',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],

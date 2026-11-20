@@ -270,6 +270,90 @@ function createInitialState(): LocalStoreState {
   };
 }
 
+const LEGACY_SHOWROOM_IMAGE_MAP: Record<string, string> = {
+  '/src/assets/images/jh_linen_front_1795173047315.jpg':
+    '/src/assets/images/linen_stage_front_1795189536270.jpg',
+  '/src/assets/images/jh_linen_right_1795173048066.jpg':
+    '/src/assets/images/jh_stage_linen_right.jpg',
+  '/src/assets/images/jh_linen_back_1795173048092.jpg':
+    '/src/assets/images/jh_stage_linen_back.jpg',
+  '/src/assets/images/jh_linen_left_1795173048223.jpg':
+    '/src/assets/images/jh_stage_linen_left.jpg',
+  '/src/assets/images/jh_hoodie_front_1795173047250.jpg':
+    '/src/assets/images/jh_stage_v4_hoodie_front.jpg',
+  '/src/assets/images/jh_hoodie_right_1795173048191.jpg':
+    '/src/assets/images/jh_stage_v4_hoodie_right.jpg',
+  '/src/assets/images/jh_hoodie_back_1795173047811.jpg':
+    '/src/assets/images/jh_stage_v4_hoodie_back.jpg',
+  '/src/assets/images/jh_hoodie_left_1795173048658.jpg':
+    '/src/assets/images/jh_stage_v4_hoodie_left.jpg',
+  '/src/assets/images/jh_breton_front_1795173166048.jpg':
+    '/src/assets/images/jh_stage_v6_breton_front.jpg',
+  '/src/assets/images/jh_breton_right_1795173200001.jpg':
+    '/src/assets/images/breton_stage_right_1795189539978.jpg',
+  '/src/assets/images/jh_breton_back_1795173168034.jpg':
+    '/src/assets/images/breton_stage_back_1795189536212.jpg',
+  '/src/assets/images/jh_breton_left_1795173200002.jpg':
+    '/src/assets/images/breton_stage_left_1795189536621.jpg',
+  '/src/assets/images/jh_chore_front_1795173166215.jpg':
+    '/src/assets/images/jh_stage_chore_front.jpg',
+  '/src/assets/images/jh_chore_right_1795173200005.jpg':
+    '/src/assets/images/jh_stage_chore_right.jpg',
+  '/src/assets/images/jh_chore_back_1795173200006.jpg':
+    '/src/assets/images/jh_stage_chore_back.jpg',
+  '/src/assets/images/jh_chore_left_1795173200007.jpg':
+    '/src/assets/images/jh_stage_chore_left.jpg',
+  '/src/assets/images/jh_bomber_front_1795173165416.jpg':
+    '/src/assets/images/jh_stage_bomber_front.jpg',
+  '/src/assets/images/jh_bomber_right_1795173200003.jpg':
+    '/src/assets/images/jh_stage_bomber_right.jpg',
+  '/src/assets/images/jh_bomber_back_1795173200004.jpg':
+    '/src/assets/images/jh_stage_bomber_back.jpg',
+  '/src/assets/images/jh_bomber_left_1795173168438.jpg':
+    '/src/assets/images/jh_stage_bomber_left.jpg',
+};
+
+function migrateShowroomImagePath(src: string): string {
+  return LEGACY_SHOWROOM_IMAGE_MAP[src] ?? src;
+}
+
+function migrateProductsToUnifiedShowroom(products: Product[]): {
+  products: Product[];
+  changed: boolean;
+} {
+  let changed = false;
+  const migrated = products.map((product) => {
+    const nextShowroomImage = migrateShowroomImagePath(product.showroomImage);
+    const nextFront = migrateShowroomImagePath(product.showroomViews.front);
+    const nextRight = migrateShowroomImagePath(product.showroomViews.right);
+    const nextBack = migrateShowroomImagePath(product.showroomViews.back);
+    const nextLeft = migrateShowroomImagePath(product.showroomViews.left);
+
+    if (
+      nextShowroomImage !== product.showroomImage ||
+      nextFront !== product.showroomViews.front ||
+      nextRight !== product.showroomViews.right ||
+      nextBack !== product.showroomViews.back ||
+      nextLeft !== product.showroomViews.left
+    ) {
+      changed = true;
+      return {
+        ...product,
+        showroomImage: nextShowroomImage,
+        showroomViews: {
+          front: nextFront,
+          right: nextRight,
+          back: nextBack,
+          left: nextLeft,
+        },
+      };
+    }
+    return product;
+  });
+
+  return { products: migrated, changed };
+}
+
 function loadStateFromStorage(): LocalStoreState {
   try {
     const raw = window.localStorage.getItem(STORAGE_DB_KEY);
@@ -282,8 +366,10 @@ function loadStateFromStorage(): LocalStoreState {
         Array.isArray(parsed.inventoryLogs) &&
         parsed.settings
       ) {
-        return {
-          products: parsed.products,
+        const { products: migratedProducts, changed } =
+          migrateProductsToUnifiedShowroom(parsed.products);
+        const loaded: LocalStoreState = {
+          products: migratedProducts,
           users: parsed.users,
           orders: parsed.orders,
           inventoryLogs: parsed.inventoryLogs,
@@ -292,6 +378,10 @@ function loadStateFromStorage(): LocalStoreState {
             ...parsed.settings,
           },
         };
+        if (changed) {
+          saveStateToStorage(loaded);
+        }
+        return loaded;
       }
     }
   } catch {
@@ -342,6 +432,14 @@ export async function resetStoreToDefaults(): Promise<void> {
   commitState(() => createInitialState());
 }
 
+function sanitizeImageSource(value: string): string {
+  const trimmed = (value || '').trim();
+  if (trimmed.startsWith('data:image/')) {
+    return trimmed.slice(0, 1_500_000);
+  }
+  return trimmed.slice(0, 2000);
+}
+
 function sanitizeProduct(product: Product): Product {
   const id = slugifyId(product.id, 64);
   const validSizes = (product.sizes.length > 0 ? product.sizes : SIZES).filter(
@@ -365,19 +463,25 @@ function sanitizeProduct(product: Product): Product {
     status: (['active', 'draft', 'archived'].includes(product.status)
       ? product.status
       : 'active') as ProductStatus,
-    showroomImage: clampString(
+    showroomImage: sanitizeImageSource(
       product.showroomImage || product.showroomViews.front,
-      500,
     ),
     showroomViews: {
-      front: clampString(product.showroomViews.front || product.showroomImage, 500),
-      right: clampString(product.showroomViews.right || product.showroomImage, 500),
-      back: clampString(product.showroomViews.back || product.showroomImage, 500),
-      left: clampString(product.showroomViews.left || product.showroomImage, 500),
+      front: sanitizeImageSource(
+        product.showroomViews.front || product.showroomImage,
+      ),
+      right: sanitizeImageSource(
+        product.showroomViews.right || product.showroomImage,
+      ),
+      back: sanitizeImageSource(
+        product.showroomViews.back || product.showroomImage,
+      ),
+      left: sanitizeImageSource(
+        product.showroomViews.left || product.showroomImage,
+      ),
     },
-    productImage: clampString(
+    productImage: sanitizeImageSource(
       product.productImage || product.showroomImage,
-      500,
     ),
     sizes: validSizes.length > 0 ? validSizes : [...SIZES],
     stock: normalizeStock(product.stock),

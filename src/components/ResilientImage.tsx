@@ -23,9 +23,9 @@ export function ResilientImage({
       <div
         role="img"
         aria-label={alt}
-        className={`flex flex-col items-center justify-center bg-gradient-to-br from-[#EFECE6] via-[#E8E2D8] to-[#DED6C9] text-[#5A534B] p-4 ${className}`}
+        className={`flex flex-col items-center justify-center bg-gradient-to-br from-[#F5EBD9] via-[#EAD9BE] to-[#DCC39E] dark:from-[#261911] dark:via-[#1F140D] dark:to-[#170F0A] text-[#5E402A] dark:text-[#D4BEA1] p-4 ${className}`}
       >
-        <Shirt className="w-7 h-7 stroke-[1.25] opacity-60 mb-2" aria-hidden="true" />
+        <Shirt className="w-7 h-7 stroke-[1.25] text-[#B45309] dark:text-[#E5B54F] opacity-75 mb-2" aria-hidden="true" />
         <span className="text-xs font-medium tracking-wide text-center line-clamp-2">
           {fallbackTitle || alt}
         </span>

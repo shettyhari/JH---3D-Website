@@ -28,7 +28,7 @@ export function BrandLogo({
       />
       {showName && (
         <span
-          className={`font-editorial ${textSizeClass} leading-none font-medium tracking-[0.14em] text-[#171615] dark:text-[#F4F1EC]`}
+          className={`font-editorial ${textSizeClass} leading-none font-medium tracking-[0.14em] text-[#2A1810] dark:text-[#F4DFB6]`}
         >
           Jhonty Hub
         </span>

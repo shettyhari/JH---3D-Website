@@ -31,17 +31,21 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
-      <div className="rounded-xl bg-white dark:bg-[#141312] border border-black/[0.08] dark:border-white/[0.1] p-6 space-y-5">
+      <div className="rounded-xl bg-[#FFFBF4] dark:bg-[#1B110B] border border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.2] p-6 space-y-5">
         <div>
-          <h3 className="text-sm font-semibold">Storefront Merchandising</h3>
-          <p className="text-xs text-[#6D665E] dark:text-[#9E978F] mt-0.5">
+          <h3 className="text-sm font-semibold text-[#2A1810] dark:text-[#F7EFE2]">
+            Storefront Merchandising
+          </h3>
+          <p className="text-xs text-[#7D5B3F] dark:text-[#B99A74] mt-0.5">
             Changes sync immediately to the live Jhonty Hub showroom header and checkout drawer.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
-            <label className="block font-medium mb-1.5">Store Name</label>
+            <label className="block font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1.5">
+              Store Name
+            </label>
             <input
               type="text"
               required
@@ -50,12 +54,14 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, storeName: e.target.value }))
               }
-              className="w-full px-3 py-2 text-sm rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
             />
           </div>
 
           <div>
-            <label className="block font-medium mb-1.5">Concierge Support Email</label>
+            <label className="block font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1.5">
+              Concierge Support Email
+            </label>
             <input
               type="email"
               required
@@ -64,13 +70,13 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, supportEmail: e.target.value }))
               }
-              className="w-full px-3 py-2 text-sm rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
             />
           </div>
         </div>
 
-        <div className="space-y-3 pt-2 border-t border-black/[0.06] dark:border-white/[0.08]">
-          <label className="inline-flex items-center gap-2.5 text-xs font-medium cursor-pointer">
+        <div className="space-y-3 pt-2 border-t border-[#3B2314]/[0.1] dark:border-[#D4A243]/[0.16]">
+          <label className="inline-flex items-center gap-2.5 text-xs font-medium text-[#2A1810] dark:text-[#F7EFE2] cursor-pointer">
             <input
               type="checkbox"
               checked={form.announcementEnabled}
@@ -80,13 +86,13 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
                   announcementEnabled: e.target.checked,
                 }))
               }
-              className="w-4 h-4 accent-[#171615] dark:accent-[#F4F1EC]"
+              className="w-4 h-4 accent-[#B45309] dark:accent-[#E5B54F]"
             />
             <span>Display top announcement bar on storefront</span>
           </label>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5">
+            <label className="block text-xs font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1.5">
               Announcement Copy
             </label>
             <input
@@ -99,25 +105,25 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
                   announcementText: e.target.value,
                 }))
               }
-              className="w-full px-3 py-2 text-sm rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
             />
           </div>
         </div>
       </div>
 
-      <div className="rounded-xl bg-white dark:bg-[#141312] border border-black/[0.08] dark:border-white/[0.1] p-6 space-y-5">
+      <div className="rounded-xl bg-[#FFFBF4] dark:bg-[#1B110B] border border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.2] p-6 space-y-5">
         <div>
-          <h3 className="text-sm font-semibold">
+          <h3 className="text-sm font-semibold text-[#2A1810] dark:text-[#F7EFE2]">
             Shipping & Inventory Rules (INR)
           </h3>
-          <p className="text-xs text-[#6D665E] dark:text-[#9E978F] mt-0.5">
+          <p className="text-xs text-[#7D5B3F] dark:text-[#B99A74] mt-0.5">
             Controls checkout shipping thresholds in Indian Rupees (₹) and default low-stock alerts.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
-            <label className="block font-medium mb-1.5">
+            <label className="block font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1.5">
               Free Delivery Threshold (INR ₹)
             </label>
             <input
@@ -132,12 +138,12 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
                   freeDeliveryThresholdUsd: Math.max(0, Number(e.target.value) || 0),
                 }))
               }
-              className="w-full px-3 py-2 text-sm font-mono tabular-nums rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"
+              className="w-full px-3 py-2 text-sm font-mono tabular-nums rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
             />
           </div>
 
           <div>
-            <label className="block font-medium mb-1.5">
+            <label className="block font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1.5">
               Standard Shipping Rate (INR ₹)
             </label>
             <input
@@ -152,12 +158,12 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
                   standardShippingUsd: Math.max(0, Number(e.target.value) || 0),
                 }))
               }
-              className="w-full px-3 py-2 text-sm font-mono tabular-nums rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"
+              className="w-full px-3 py-2 text-sm font-mono tabular-nums rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
             />
           </div>
 
           <div>
-            <label className="block font-medium mb-1.5">
+            <label className="block font-medium text-[#5E402A] dark:text-[#D4BEA1] mb-1.5">
               Default Low-Stock Threshold (Units)
             </label>
             <input
@@ -175,7 +181,7 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
                   ),
                 }))
               }
-              className="w-full px-3 py-2 text-sm font-mono tabular-nums rounded-lg border border-black/[0.14] dark:border-white/[0.16] bg-white dark:bg-[#1A1917]"
+              className="w-full px-3 py-2 text-sm font-mono tabular-nums rounded-lg border border-[#7D5B3F]/30 dark:border-[#D4A243]/28 bg-[#F6EDE0]/60 dark:bg-[#24170F] text-[#2A1810] dark:text-[#F7EFE2] focus:outline-none focus:border-[#B45309] dark:focus:border-[#E5B54F]"
             />
           </div>
         </div>
@@ -193,7 +199,7 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
         <button
           type="submit"
           disabled={saving}
-          className="px-5 py-2.5 rounded-lg bg-[#171615] dark:bg-[#F4F1EC] text-white dark:text-[#171615] text-xs font-medium hover:opacity-90 disabled:opacity-50 cursor-pointer"
+          className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#9A4A0A] via-[#B45309] to-[#C6922E] dark:from-[#D49B35] dark:to-[#E5B54F] text-[#FFFDF9] dark:text-[#1B1009] text-xs font-semibold hover:opacity-95 disabled:opacity-50 cursor-pointer"
         >
           {saving ? 'Saving...' : 'Save Store Settings'}
         </button>

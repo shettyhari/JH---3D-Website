@@ -62,10 +62,10 @@ export function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white dark:bg-[#080808] border-b border-black/[0.08] dark:border-white/[0.1] transition-colors duration-200">
-      {/* Slim announcement strip */}
+    <header className="sticky top-0 z-40 w-full bg-[#FFFBF4] dark:bg-[#160E09] border-b border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.2] transition-colors duration-200">
+      {/* Slim announcement strip in Deep Espresso with Burnished Gold typography */}
       {bannerVisible && announcementEnabled && (
-        <div className="relative flex items-center justify-center bg-[#141312] dark:bg-[#191816] text-white/90 h-7 px-8 text-[10px] tracking-[0.18em] font-medium uppercase border-b border-transparent dark:border-white/[0.06]">
+        <div className="relative flex items-center justify-center bg-[#2E1A0F] dark:bg-[#22140B] text-[#F2D184] h-7 px-8 text-[10px] tracking-[0.18em] font-medium uppercase border-b border-[#C6922E]/25">
           <span className="truncate">
             {member
               ? `COMPLIMENTARY EXPRESS DELIVERY ACTIVE FOR ${member.name.toUpperCase()}`
@@ -75,7 +75,7 @@ export function Header({
             type="button"
             onClick={() => setBannerVisible(false)}
             aria-label="Dismiss delivery announcement"
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/60 hover:text-white transition-colors cursor-pointer"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#E5B54F]/70 hover:text-[#F8E2A8] transition-colors cursor-pointer"
           >
             <X className="w-3 h-3" />
           </button>
@@ -90,14 +90,14 @@ export function Header({
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-label="Toggle navigation menu"
-            className="lg:hidden p-2 -ml-2 text-[#171615] dark:text-[#F4F1EC] hover:opacity-70 transition-opacity cursor-pointer"
+            className="lg:hidden p-2 -ml-2 text-[#2A1810] dark:text-[#F7EFE2] hover:text-[#B45309] dark:hover:text-[#E5B54F] transition-colors cursor-pointer"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
           <nav
             aria-label="Primary navigation"
-            className="hidden lg:flex items-center gap-6 text-[11px] font-medium tracking-[0.11em] text-[#45413C] dark:text-[#B5AEA6]"
+            className="hidden lg:flex items-center gap-6 text-[11px] font-medium tracking-[0.11em] text-[#5E402A] dark:text-[#D4BEA1]"
           >
             {NAV_ITEMS.map((item) => {
               const isActive = activeSection === item.id;
@@ -110,8 +110,8 @@ export function Header({
                   }
                   className={`relative py-1 whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
                     isActive
-                      ? 'text-[#171615] dark:text-[#F4F1EC] after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[1.5px] after:bg-[#171615] dark:after:bg-[#F4F1EC]'
-                      : 'hover:text-[#171615] dark:hover:text-[#F4F1EC]'
+                      ? 'text-[#9A4A0A] dark:text-[#E5B54F] after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[2px] after:bg-gradient-to-r after:from-[#B45309] after:to-[#D4A243] dark:after:from-[#D4A243] dark:after:to-[#F59E0B]'
+                      : 'hover:text-[#9A4A0A] dark:hover:text-[#E5B54F]'
                   }`}
                 >
                   {item.label}
@@ -135,10 +135,10 @@ export function Header({
         </button>
 
         {/* Right Zone: Currency, About, Theme, Search, Saved, Bag, Account */}
-        <div className="flex items-center justify-end gap-2.5 sm:gap-4 lg:gap-5 flex-1 min-w-0 text-[11px] font-medium tracking-[0.1em] text-[#45413C] dark:text-[#B5AEA6]">
+        <div className="flex items-center justify-end gap-2.5 sm:gap-4 lg:gap-5 flex-1 min-w-0 text-[11px] font-medium tracking-[0.1em] text-[#5E402A] dark:text-[#D4BEA1]">
           <span
             title="Prices displayed in Indian Rupees (INR)"
-            className="hidden xl:inline-flex items-center gap-1 text-[#59534C] dark:text-[#A8A199] whitespace-nowrap shrink-0"
+            className="hidden xl:inline-flex items-center gap-1 text-[#7D5B3F] dark:text-[#C4A67E] whitespace-nowrap shrink-0"
           >
             {CURRENCIES[currency].label}
           </span>
@@ -146,7 +146,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenAbout}
-            className="hidden md:inline-block hover:text-[#171615] dark:hover:text-[#F4F1EC] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="hidden md:inline-block hover:text-[#9A4A0A] dark:hover:text-[#E5B54F] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             ABOUT
           </button>
@@ -158,11 +158,11 @@ export function Header({
             }
             className={`hidden md:inline-flex items-center gap-1 py-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               activeSection === 'admin'
-                ? 'text-[#171615] dark:text-[#F4F1EC] underline underline-offset-4 decoration-[1.5px]'
-                : 'hover:text-[#171615] dark:hover:text-[#F4F1EC]'
+                ? 'text-[#9A4A0A] dark:text-[#E5B54F] underline underline-offset-4 decoration-[#C6922E] decoration-[1.5px]'
+                : 'hover:text-[#9A4A0A] dark:hover:text-[#E5B54F]'
             }`}
           >
-            <ShieldCheck className="w-3.5 h-3.5 stroke-[1.75]" />
+            <ShieldCheck className="w-3.5 h-3.5 stroke-[1.75] text-[#B45309] dark:text-[#E5B54F]" />
             <span>ADMIN</span>
           </button>
 
@@ -175,12 +175,12 @@ export function Header({
             title={
               theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
             }
-            className="p-1.5 hover:text-[#171615] dark:hover:text-[#F4F1EC] transition-colors shrink-0 cursor-pointer"
+            className="p-1.5 hover:text-[#9A4A0A] dark:hover:text-[#E5B54F] transition-colors shrink-0 cursor-pointer"
           >
             {theme === 'light' ? (
               <Moon className="w-[15px] h-[15px] stroke-[1.75]" />
             ) : (
-              <Sun className="w-[15px] h-[15px] stroke-[1.75]" />
+              <Sun className="w-[15px] h-[15px] stroke-[1.75] text-[#E5B54F]" />
             )}
           </button>
 
@@ -188,7 +188,7 @@ export function Header({
             type="button"
             onClick={onOpenSearch}
             aria-label="Search garments"
-            className="p-1.5 hover:text-[#171615] dark:hover:text-[#F4F1EC] transition-colors shrink-0 cursor-pointer"
+            className="p-1.5 hover:text-[#9A4A0A] dark:hover:text-[#E5B54F] transition-colors shrink-0 cursor-pointer"
           >
             <Search className="w-[15px] h-[15px] stroke-[1.75]" />
           </button>
@@ -197,17 +197,17 @@ export function Header({
             type="button"
             onClick={onOpenWishlist}
             aria-label={`Saved pieces (${wishlistCount})`}
-            className="relative p-1.5 hover:text-[#171615] dark:hover:text-[#F4F1EC] transition-colors shrink-0 cursor-pointer hidden sm:inline-flex items-center"
+            className="relative p-1.5 hover:text-[#9A4A0A] dark:hover:text-[#E5B54F] transition-colors shrink-0 cursor-pointer hidden sm:inline-flex items-center"
           >
             <Heart
               className={`w-[15px] h-[15px] stroke-[1.75] ${
                 wishlistCount > 0
-                  ? 'fill-[#171615] text-[#171615] dark:fill-[#F4F1EC] dark:text-[#F4F1EC]'
+                  ? 'fill-[#B45309] text-[#B45309] dark:fill-[#E5B54F] dark:text-[#E5B54F]'
                   : ''
               }`}
             />
             {wishlistCount > 0 && (
-              <span className="ml-1 text-[10px] tabular-nums text-[#171615] dark:text-[#F4F1EC]">
+              <span className="ml-1 text-[10px] tabular-nums text-[#9A4A0A] dark:text-[#E5B54F] font-semibold">
                 {wishlistCount}
               </span>
             )}
@@ -217,9 +217,9 @@ export function Header({
             type="button"
             onClick={onOpenBag}
             aria-label={`Open shopping bag with ${bagCount} items`}
-            className="inline-flex items-center gap-1.5 text-[#171615] dark:text-[#F4F1EC] hover:opacity-75 transition-opacity whitespace-nowrap shrink-0 cursor-pointer py-1"
+            className="inline-flex items-center gap-1.5 text-[#2A1810] dark:text-[#F7EFE2] hover:text-[#9A4A0A] dark:hover:text-[#E5B54F] transition-colors whitespace-nowrap shrink-0 cursor-pointer py-1"
           >
-            <ShoppingBag className="w-[15px] h-[15px] stroke-[1.75]" />
+            <ShoppingBag className="w-[15px] h-[15px] stroke-[1.75] text-[#B45309] dark:text-[#E5B54F]" />
             <span className="hidden sm:inline tabular-nums">BAG ({bagCount})</span>
             <span className="sm:hidden tabular-nums">{bagCount}</span>
           </button>
@@ -227,11 +227,11 @@ export function Header({
           <button
             type="button"
             onClick={onOpenAuth}
-            className="hidden md:inline-flex items-center gap-1.5 hover:text-[#171615] dark:hover:text-[#F4F1EC] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="hidden md:inline-flex items-center gap-1.5 hover:text-[#9A4A0A] dark:hover:text-[#E5B54F] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             {member ? (
               <>
-                <User className="w-3.5 h-3.5 stroke-[1.75]" />
+                <User className="w-3.5 h-3.5 stroke-[1.75] text-[#B45309] dark:text-[#E5B54F]" />
                 <span className="max-w-[90px] truncate uppercase">
                   {member.name.split(' ')[0]}
                 </span>
@@ -245,7 +245,7 @@ export function Header({
 
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-black/[0.08] dark:border-white/[0.1] bg-white dark:bg-[#080808] px-5 py-4 space-y-3">
+        <div className="lg:hidden border-t border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.2] bg-[#FFFBF4] dark:bg-[#160E09] px-5 py-4 space-y-3">
           <div className="flex flex-col space-y-1">
             <button
               type="button"
@@ -255,8 +255,8 @@ export function Header({
               }}
               className={`text-left py-2 text-xs tracking-[0.14em] font-medium cursor-pointer ${
                 activeSection === 'showroom'
-                  ? 'text-[#171615] dark:text-[#F4F1EC]'
-                  : 'text-[#5D5852] dark:text-[#9E978F]'
+                  ? 'text-[#9A4A0A] dark:text-[#E5B54F]'
+                  : 'text-[#5E402A] dark:text-[#C4A67E]'
               }`}
             >
               VIRTUAL SHOWROOM
@@ -271,8 +271,8 @@ export function Header({
                 }}
                 className={`text-left py-2 text-xs tracking-[0.14em] font-medium cursor-pointer ${
                   activeSection === item.id
-                    ? 'text-[#171615] dark:text-[#F4F1EC]'
-                    : 'text-[#5D5852] dark:text-[#9E978F]'
+                    ? 'text-[#9A4A0A] dark:text-[#E5B54F]'
+                    : 'text-[#5E402A] dark:text-[#C4A67E]'
                 }`}
               >
                 {item.label}
@@ -286,15 +286,15 @@ export function Header({
               }}
               className={`text-left py-2 text-xs tracking-[0.14em] font-medium inline-flex items-center gap-1.5 cursor-pointer ${
                 activeSection === 'admin'
-                  ? 'text-[#171615] dark:text-[#F4F1EC]'
-                  : 'text-[#5D5852] dark:text-[#9E978F]'
+                  ? 'text-[#9A4A0A] dark:text-[#E5B54F]'
+                  : 'text-[#5E402A] dark:text-[#C4A67E]'
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
+              <ShieldCheck className="w-3.5 h-3.5 text-[#B45309] dark:text-[#E5B54F]" />
               <span>ADMIN CONSOLE</span>
             </button>
           </div>
-          <div className="pt-3 border-t border-black/[0.08] dark:border-white/[0.1] flex flex-wrap items-center gap-4 text-xs tracking-[0.12em] text-[#45413C] dark:text-[#B5AEA6]">
+          <div className="pt-3 border-t border-[#3B2314]/[0.12] dark:border-[#D4A243]/[0.2] flex flex-wrap items-center gap-4 text-xs tracking-[0.12em] text-[#5E402A] dark:text-[#D4BEA1]">
             <button
               type="button"
               onClick={onToggleTheme}
@@ -307,12 +307,12 @@ export function Header({
                 </>
               ) : (
                 <>
-                  <Sun className="w-3.5 h-3.5" />
+                  <Sun className="w-3.5 h-3.5 text-[#E5B54F]" />
                   <span>LIGHT THEME</span>
                 </>
               )}
             </button>
-            <span className="py-1 text-[#6D665E] dark:text-[#9E978F]">
+            <span className="py-1 text-[#7D5B3F] dark:text-[#A98C6D]">
               {CURRENCIES[currency].label}
             </span>
             <button
@@ -341,7 +341,7 @@ export function Header({
                 onOpenAuth();
                 setMobileMenuOpen(false);
               }}
-              className="py-1 font-medium text-[#171615] dark:text-[#F4F1EC] cursor-pointer"
+              className="py-1 font-medium text-[#2A1810] dark:text-[#E5B54F] cursor-pointer"
             >
               {member ? member.name : 'SIGN IN'}
             </button>

@@ -243,7 +243,7 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F7] dark:bg-[#0E0D0C] text-[#171615] dark:text-[#F4F1EC] transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-[#FBF6EE] dark:bg-[#120B07] text-[#2A1810] dark:text-[#F7EFE2] transition-colors duration-200">
       <Header
         activeSection={activeSection}
         onSelectSection={setActiveSection}

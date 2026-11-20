@@ -4,21 +4,38 @@
 @theme {
   --font-serif: "Cormorant Garamond", Georgia, serif;
   --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --color-espresso: #2a1810;
+  --color-walnut: #3b2314;
+  --color-chestnut: #5e402a;
+  --color-umber: #7d5b3f;
+  --color-gold: #c6922e;
+  --color-gold-bright: #e5b54f;
+  --color-amber-rich: #b45309;
 }
 
 @layer base {
   html,
   body {
     font-family: var(--font-sans);
-    background-color: #faf9f7;
-    color: #171615;
+    background-color: #fbf6ee;
+    color: #2a1810;
     overflow-x: hidden;
   }
 
   html.dark,
   html.dark body {
-    background-color: #0e0d0c;
-    color: #f4f1ec;
+    background-color: #120b07;
+    color: #f7efe2;
+  }
+
+  ::selection {
+    background-color: rgba(212, 162, 67, 0.34);
+    color: #2a1810;
+  }
+
+  html.dark ::selection {
+    background-color: rgba(229, 181, 79, 0.32);
+    color: #fff8ec;
   }
 }
 
@@ -34,7 +51,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Subtle scrollbar for drawers */
+/* Warm brown & gold scrollbar for drawers and panels */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -45,18 +62,18 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(23, 22, 21, 0.16);
+  background: rgba(125, 91, 63, 0.32);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(23, 22, 21, 0.3);
+  background: rgba(198, 146, 46, 0.65);
 }
 
 html.dark ::-webkit-scrollbar-thumb {
-  background: rgba(244, 241, 236, 0.18);
+  background: rgba(212, 162, 67, 0.28);
 }
 
 html.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(244, 241, 236, 0.32);
+  background: rgba(229, 181, 79, 0.55);
 }
